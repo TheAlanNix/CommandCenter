@@ -1,0 +1,22 @@
+{
+    "database": {
+        "address": "localhost:27017",
+        "username": "",
+        "password": ""
+    },
+    "amp": {
+        "api_fqdn": "api.amp.cisco.com",
+        "client_id": "",
+        "api_key": ""
+    },
+    "stealthwatch": {
+        "smc_address": "",
+        "smc_username": "",
+        "smc_password": ""
+    },
+    "umbrella": {
+        "org_id": "",
+        "reporting_api_key": "",
+        "reporting_api_secret": ""
+    }
+}
