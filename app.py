@@ -24,6 +24,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from modules import amp_event_importer
+from modules import stealthwatch_event_importer
 from modules import umbrella_event_importer
 
 # Configuration
@@ -98,6 +99,7 @@ def get_alerts():
 def load_events():
     """A function to trigger all event imports into the database"""
     amp_event_importer.run()
+    stealthwatch_event_importer.run()
     umbrella_event_importer.run()
 
 

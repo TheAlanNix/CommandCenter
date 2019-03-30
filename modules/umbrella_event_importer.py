@@ -35,7 +35,6 @@ def get_events(start_date=None):
     """Get Umbrella events"""
 
     # Format the date for AMP
-    start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S+00:00")
     start_date = int(start_date.timestamp())
 
     # Build the API URL
@@ -80,7 +79,7 @@ def run():
     else:
         print("No events in database.  Setting latest_event timestamp to 24 hours ago. (The maximum for Umbrella)")
         start_date = datetime.utcnow().replace(microsecond=0) + timedelta(hours=-24)
-        latest_event = {"timestamp": start_date.isoformat() + "+00:00"}
+        latest_event = {"timestamp": start_date}
 
     print("Latest Umbrella Event: ", latest_event['timestamp'])
 
@@ -91,17 +90,17 @@ def run():
     for event in umbrella_events['requests']:
 
         current_event_time = datetime.strptime(event["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ")
-        latest_event_time = datetime.strptime(latest_event["timestamp"], "%Y-%m-%dT%H:%M:%S+00:00")
+        latest_event_time = latest_event["timestamp"]
 
         if current_event_time > latest_event_time:
 
             # Make common fields for the event
             event_common_fields = {
                 "event_name": "Umbrella {} Destination".format(event["actionTaken"]),
-                "event_details": event["destination"],
+                "event_details": "Umbrella {} the following destination: {}".format(event["actionTaken"], event["destination"]),
                 "product": "Umbrella",
                 "src_ip": event['internalIp'],
-                "timestamp": current_event_time.replace(microsecond=0).isoformat() + "+00:00"
+                "timestamp": current_event_time
             }
 
             # Add the common fields to the event

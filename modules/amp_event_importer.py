@@ -35,7 +35,6 @@ def get_events(start_date=None):
     """Get AMP events"""
 
     # Format the date for AMP
-    start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S+00:00")
     start_date = start_date.isoformat()
 
     # Build the API URL
@@ -80,7 +79,7 @@ def run():
     else:
         print("No events in database.  Setting latest_event timestamp to 30 days ago.")
         start_date = datetime.utcnow().replace(microsecond=0) + timedelta(-30)
-        latest_event = {"timestamp": start_date.isoformat() + "+00:00"}
+        latest_event = {"timestamp": start_date}
 
     print("Latest AMP Event: ", latest_event['timestamp'])
 
@@ -91,7 +90,7 @@ def run():
     for event in amp_events['data']:
 
         current_event_time = datetime.strptime(event["date"], "%Y-%m-%dT%H:%M:%S+00:00")
-        latest_event_time = datetime.strptime(latest_event["timestamp"], "%Y-%m-%dT%H:%M:%S+00:00")
+        latest_event_time = latest_event["timestamp"]
 
         if current_event_time > latest_event_time:
 
@@ -101,7 +100,7 @@ def run():
                 "event_details": event["detection"],
                 "product": "AMP for Endpoints",
                 "src_ip": event['computer']['network_addresses'][0]['ip'],
-                "timestamp": event["date"]
+                "timestamp": current_event_time
             }
 
             # Add the common fields to the event
