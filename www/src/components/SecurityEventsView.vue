@@ -21,8 +21,12 @@
         </div>
         <div class="container-fluid">
             <div class="row">
-                <EventTable :events="events" @update="onEventUpdate"></EventTable>
-                <EventDetails :selected_event="selected_event"></EventDetails>
+                <div class="col-12 col-md-6">
+                    <EventTable :events="events" @update="onEventUpdate"></EventTable>
+                </div>
+                <div class="col-12 col-md-6">
+                    <EventDetails :selected_event="selected_event"></EventDetails>
+                </div>
             </div>
         </div>
         <!--<div id="command-viewport" class="container-fluid">
@@ -78,7 +82,7 @@ export default {
         .catch((error) => {
           // eslint-disable-next-line
           console.error(error);
-          this.alerts.push({ message: error });
+          this.errors.push({ message: error });
         });
     },
     onEventUpdate(event) {
@@ -144,4 +148,3 @@ html, body {
     }
 }
 </style>
-

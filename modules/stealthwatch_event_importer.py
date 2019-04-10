@@ -48,12 +48,12 @@ def login():
     print("Logging in to Stealthwatch...")
 
     # Set the URL for SMC login
-    url = "https://" + CONFIG_DATA["stealthwatch"]["smc_address"] + "/token/v2/authenticate"
+    url = "https://" + CONFIG_DATA["stealthwatch"]["address"] + "/token/v2/authenticate"
 
     # Create the login request data
     login_request_data = {
-        "username": CONFIG_DATA["stealthwatch"]["smc_username"],
-        "password": CONFIG_DATA["stealthwatch"]["smc_password"]
+        "username": CONFIG_DATA["stealthwatch"]["username"],
+        "password": CONFIG_DATA["stealthwatch"]["password"]
     }
 
     # Perform the POST request to login
@@ -70,7 +70,7 @@ def get_event_names():
     print("Getting Stealthwatch event names...")
 
     # Set the URL for getting the Security Events
-    url = 'https://' + CONFIG_DATA["stealthwatch"]["smc_address"] + '/sw-reporting/v1/tenants/' + CONFIG_DATA["stealthwatch"]["smc_tenant"] + '/security-events/templates'
+    url = 'https://' + CONFIG_DATA["stealthwatch"]["address"] + '/sw-reporting/v1/tenants/' + CONFIG_DATA["stealthwatch"]["tenant"] + '/security-events/templates'
 
     # Build the request headers
     request_headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
@@ -92,7 +92,7 @@ def get_events(start_date=None):
     """Get Stealthwatch Events"""
 
     # Set the URL for the query to POST the filter and initiate the search
-    url = 'https://' + CONFIG_DATA["stealthwatch"]["smc_address"] + '/sw-reporting/v1/tenants/' + CONFIG_DATA["stealthwatch"]["smc_tenant"] + '/security-events/queries'
+    url = 'https://' + CONFIG_DATA["stealthwatch"]["address"] + '/sw-reporting/v1/tenants/' + CONFIG_DATA["stealthwatch"]["tenant"] + '/security-events/queries'
 
     # Set the current time as the end
     end_datetime = datetime.utcnow()
@@ -138,7 +138,7 @@ def get_events(start_date=None):
             time.sleep(1)
 
         # Set the URL to check the search results and get them
-        url = 'https://' + CONFIG_DATA["stealthwatch"]["smc_address"] + '/sw-reporting/v1/tenants/' + CONFIG_DATA["stealthwatch"]["smc_tenant"] + '/security-events/results/' + search_id
+        url = 'https://' + CONFIG_DATA["stealthwatch"]["address"] + '/sw-reporting/v1/tenants/' + CONFIG_DATA["stealthwatch"]["tenant"] + '/security-events/results/' + search_id
         response = API_SESSION.request("GET", url, verify=False)
 
         # Return the results

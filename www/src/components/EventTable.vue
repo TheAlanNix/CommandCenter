@@ -1,29 +1,27 @@
 <template>
-    <div class="col-12 col-md-6">
-        <div class="event-panel">
-            <div class="row">
-                <div class="col">
-                    <div class="event-panel-header">
-                        Events
-                    </div>
+    <div class="event-panel">
+        <div class="row">
+            <div class="col">
+                <div class="event-panel-header">
+                    Events ({{ events.length }})
                 </div>
             </div>
-            <div class="row">
-                <div class="col">
-                    <div class="event-panel-table">
-                        <b-table small striped hover selectable show-empty
-                                    select-mode="single"
-                                    selectedVariant="warning"
-                                    :items="events"
-                                    :fields="fields"
-                                    @row-selected="rowSelected">
-                            <template slot="empty" slot-scope="scope">
-                                <div class="text-center my-2">
-                                    {{ scope.emptyText }}. You're completely secure. :-)
-                                </div>
-                            </template>
-                        </b-table>
-                    </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="event-panel-table">
+                    <b-table small striped hover selectable show-empty
+                                select-mode="single"
+                                selectedVariant="warning"
+                                :items="events"
+                                :fields="fields"
+                                @row-selected="rowSelected">
+                        <template slot="empty" slot-scope="scope">
+                            <div class="text-center my-2">
+                                {{ scope.emptyText }}. You're completely secure. :-)
+                            </div>
+                        </template>
+                    </b-table>
                 </div>
             </div>
         </div>
@@ -32,10 +30,10 @@
 
 <script>
 export default {
-  props: ['events', 'selected_event'],
+  props: ['events'],
   data() {
     return {
-      fields: ['product', 'event_name', 'event_details', 'timestamp'],
+      fields: ['product', 'event_name', 'event_details', { key: 'formatted_timestamp', label: 'Timestamp' }],
     };
   },
   methods: {
@@ -43,7 +41,7 @@ export default {
       if (items.length > 0) {
         this.$emit('update', items[0]);
       } else {
-        this.$emit('update', []);
+        this.$emit('update', null);
       }
     },
   },
@@ -70,7 +68,7 @@ export default {
     .event-panel-table {
         //border-top: 1px solid $border-color;
         padding: 0px 5px;
-        max-height: 80vh;
+        max-height: 40vh;
         overflow-y: scroll;
     }
 }
@@ -78,6 +76,7 @@ export default {
 .table {
     th {
         border-top: 0px;
+        white-space: nowrap;
     }
 
     td{

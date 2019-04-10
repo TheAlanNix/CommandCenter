@@ -9,10 +9,19 @@
         "client_id": "",
         "api_key": ""
     },
+    "ise": {
+        "address": "",
+        "username": "",
+        "password": "",
+        "pxgrid_cert": "/path/to/cert",
+        "pxgrid_key": "/path/to/key",
+        "pxgrid_name": "command_center"
+    },
     "stealthwatch": {
-        "smc_address": "",
-        "smc_username": "",
-        "smc_password": ""
+        "address": "",
+        "username": "",
+        "password": "",
+        "tenant": ""
     },
     "umbrella": {
         "org_id": "",

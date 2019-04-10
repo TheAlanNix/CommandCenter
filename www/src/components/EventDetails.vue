@@ -1,25 +1,25 @@
 <template>
-    <div class="col-12 col-md-6">
-        <div class="event-details-panel">
-            <div class="row">
-                <div class="col">
-                    <div class="event-details-panel-header">
-                        Event Details
-                    </div>
+    <div class="event-details-panel">
+        <div class="row">
+            <div class="col">
+                <div class="event-details-panel-header">
+                    Event Details
                 </div>
             </div>
-            <div class="row">
-                <div class="col">
-                    <div v-if="selected_event.length == 0">
-                        <div class="text-center my-2">
-                            No Event Selected
-                        </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div v-if="selected_event.length == 0">
+                    <div class="text-center my-2">
+                        No Event Selected
                     </div>
-                    <AmpEvent v-if="selected_event.product == 'AMP for Endpoints'"
-                                            :event="selected_event"></AmpEvent>
-                    <UmbrellaEvent v-if="selected_event.product == 'Umbrella'"
-                                            :event="selected_event"></UmbrellaEvent>
                 </div>
+                <AmpEvent v-if="selected_event.product == 'AMP for Endpoints'"
+                                        :event="selected_event"></AmpEvent>
+                <StealthwatchEvent v-if="selected_event.product == 'Stealthwatch'"
+                                        :event="selected_event"></StealthwatchEvent>
+                <UmbrellaEvent v-if="selected_event.product == 'Umbrella'"
+                                        :event="selected_event"></UmbrellaEvent>
             </div>
         </div>
     </div>
@@ -27,12 +27,14 @@
 
 <script>
 import AmpEvent from './event_types/AmpEvent';
+import StealthwatchEvent from './event_types/StealthwatchEvent';
 import UmbrellaEvent from './event_types/UmbrellaEvent';
 
 export default {
   props: ['selected_event'],
   components: {
     AmpEvent,
+    StealthwatchEvent,
     UmbrellaEvent,
   },
 };
@@ -57,7 +59,7 @@ export default {
 
     .event-details-panel-content {
         //border-top: 1px solid $border-color;
-        padding: 10px;
+        padding: 15px;
         max-height: 80vh;
         margin-bottom: 0px;
         overflow-y: scroll;

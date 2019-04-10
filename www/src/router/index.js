@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+import HostView from '@/components/HostView';
 import SecurityEventsView from '@/components/SecurityEventsView';
 import NotFound from '@/components/NotFound';
 import Ping from '@/components/Ping';
@@ -18,6 +19,12 @@ export default new Router({
       path: '/ping',
       name: 'Ping',
       component: Ping,
+    },
+    {
+      path: '/host/:host_ip',
+      name: 'HostView',
+      component: HostView,
+      props: true,
     },
     {
       path: '/security-events',

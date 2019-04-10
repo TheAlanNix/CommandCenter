@@ -6,7 +6,7 @@
         </span>
         <ul class="navbar">
             <li>
-                <router-link to="security-events">
+                <router-link to="/security-events">
                     <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
                     Security Events
                     <span class="badge badge-primary">{{ events.length }}</span>

@@ -1,71 +1,198 @@
 <template>
-    <div :id="host_ip" class="col-12 col-md-4">
-        <div class="host-panel">
-            <div class="row">
-                <div class="col">
-                    <div class="host-panel-header">
-                        {{ host_ip }}
-                        <span class="host-panel-close" onclick="deleteHostpanel('host_')">
-                            <i class="fa fa-times-circle" aria-hidden="true"></i>
-                        </span>
-                    </div>
-                </div>
+    <div id="page-container">
+        <MenuBar :events="events"></MenuBar>
+        <div id="time-selection">
+            <b-form inline>
+                <label class="mr-sm-2" for="inlineFormCustomSelectPref">Timeframe: </label>
+                <b-form-select v-model="timeframe_selected"
+                               :options="timeframe_options"
+                               size="sm"
+                               @change="onTimeframeChange">
+                </b-form-select>
+            </b-form>
+        </div>
+        <div id="page-title">Host: {{ host_ip }}</div>
+        <div id="status-container" v-if="errors.length > 0">
+            <div class="alert alert-danger text-left">
+                <ul>
+                    <li v-for="(error, index) in errors" :key="index">{{ error.message }}</li>
+                </ul>
             </div>
+        </div>
+        <div class="container-fluid">
             <div class="row">
-                <div class="col-12">
-                    <div class="host-panel-map">
-                        <i class="fa fa-refresh fa-spin fa-3x fa-fw"></i>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="host-panel-details">
+                <div class="col-12 col-md-6">
+                    <IseHostPanel v-if="ise_data"
+                                  :actions="actions"
+                                  :ise_data="ise_data"></IseHostPanel>
+                    <div class="host-panel">
                         <div class="row">
-                            <div class="col-6">
-                                <strong>SW Concern:</strong> 200%
+                            <div class="col">
+                                <div class="host-panel-header">
+                                    Stealthwatch
+                                </div>
                             </div>
-                            <div class="col-6 ise-details"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="host-panel-content">
+                                    Stealthwatch Stuff Here
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="host-panel-events">
-                        <table class="table table-striped table-sm">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Product</th>
-                                    <th scope="col">Event Name</th>
-                                    <th scope="col">Event Details</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="col-12 col-md-6">
+                    <EventTable :events="events" @update="onEventUpdate"></EventTable>
+                    <EventDetails v-if="selected_event"
+                                  :selected_event="selected_event"></EventDetails>
                 </div>
-            </div>
-            <div class="col host-panel-actions">
-            <b-dropdown id="dropdownMenuButton" text="Playbooks" variant="outline-danger">
-                <b-dropdown-item>Defcon 3</b-dropdown-item>
-                <b-dropdown-item>Defcon 2</b-dropdown-item>
-                <b-dropdown-item>Defcon 1</b-dropdown-item>
-            </b-dropdown>
-            <b-button variant="outline-success">Clear</b-button>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import axios from 'axios';
+import EventDetails from './EventDetails';
+import EventTable from './EventTable';
+import IseHostPanel from './product_panels/IseHostPanel';
+import MenuBar from './MenuBar';
+
 export default {
+  name: 'HostView',
   props: ['host_ip'],
+  watch: {
+    host_ip: function () {
+      this.getIseSessionData();
+      this.getEvents();
+    },
+  },
+  data() {
+    return {
+      actions: [],
+      errors: [],
+      events: [],
+      interval: null,
+      ise_data: [],
+      timeframe_options: [
+        { value: '1', text: 'Past Hour' },
+        { value: '6', text: 'Past 6 Hours' },
+        { value: '24', text: 'Past 24 Hours' },
+        { value: '168', text: 'Past Week' },
+        { value: '744', text: 'Past Month' },
+      ],
+      timeframe_selected: '24',
+      selected_event: null,
+    };
+  },
+  components: {
+    EventDetails,
+    EventTable,
+    IseHostPanel,
+    MenuBar,
+  },
+  methods: {
+    getActions() {
+      const path = 'http://localhost:5000/api/ise_actions';
+      axios.get(path)
+        .then((res) => {
+          this.actions = res.data.SearchResult.resources;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    getEvents() {
+      const path = `http://localhost:5000/api/events?host_ip=${this.host_ip}&timeframe=${this.timeframe_selected}`;
+      axios.get(path)
+        .then((res) => {
+          this.events = res.data.events;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    getIseSessionData() {
+      const path = `http://localhost:5000/api/ise_session_data/${this.host_ip}`;
+      axios.get(path)
+        .then((res) => {
+          this.ise_data = res.data;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    onEventUpdate(event) {
+      this.selected_event = event;
+    },
+    onTimeframeChange(value) {
+      this.timeframe_selected = value;
+      this.getEvents();
+    },
+  },
+  beforeDestroy() {
+    clearInterval(this.interval);
+  },
+  created() {
+    this.getActions();
+    this.getEvents();
+    this.interval = setInterval(() => {
+      this.getEvents();
+    }, 5000);
+    this.getIseSessionData();
+  },
 };
 </script>
 
 <style lang="scss">
 @import "@/assets/_variables.scss";
+
+html, body {
+    background-color: #fff;
+    color: #636b6f;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 200;
+    height: 100vh;
+    margin: 0;
+}
+
+#page-container {
+    background-color: #f7f7f9;
+    min-height: 100vh;
+    position: relative;
+    width: 100%;
+}
+
+#time-selection {
+  float: right;
+  margin: 20px 30px;
+}
+
+#page-title {
+    font-size: 24px;
+    margin: 20px 30px;
+}
+
+#status-container {
+    margin: 20px 0px;
+    text-align: center;
+
+    .alert {
+        max-width: 40%;
+        margin: auto;
+
+        ul {
+            margin-bottom: 0;
+        }
+    }
+}
 
 .host-panel {
     background-color: #fff;
@@ -76,46 +203,28 @@ export default {
 
     .host-panel-header {
         border-bottom: 1px solid $border-color;
-        color: #049fd9;
+        color: #212529;
+        font-size: 20px;
         padding: 10px 15px;
-
-        .host-panel-close {
-            float: right;
-        }
     }
 
-    .host-panel-map {
-        height: 300px;
-        text-align: center;
-
-        .fa {
-            margin: 100px auto;
-        }
-    }
-
-    .host-panel-details {
-        border-top: 1px solid $border-color;
-        padding: 10px;
-    }
-
-    .host-panel-events {
-        border-top: 1px solid $border-color;
-        padding: 0px 5px;
-        max-height: 200px;
+    .host-panel-content {
+        //border-top: 1px solid $border-color;
+        padding: 15px;
+        max-height: 80vh;
+        margin-bottom: 0px;
         overflow-y: scroll;
 
-        .table th {
-            white-space: nowrap;
+        .heading {
+            font: 16px Nunito, sans-serif;
+            color: #212529;
         }
 
-        .table th, .table td {
-            border-top: none;
+        .content {
+            display: block;
+            font-size: 12px;
+            margin-left: 20px;
         }
-    }
-
-    .host-panel-actions {
-        border-top: 1px solid $border-color;
-        padding: 15px;
     }
 }
 </style>

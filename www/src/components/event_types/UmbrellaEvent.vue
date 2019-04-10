@@ -7,7 +7,7 @@
         </b-row>
         <b-row>
             <b-col>
-                <span class="content">{{ event.timestamp }}</span>
+                <span class="content">{{ event.formatted_timestamp }}</span>
             </b-col>
         </b-row>
         <b-row>
