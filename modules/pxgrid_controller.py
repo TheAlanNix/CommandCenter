@@ -19,10 +19,7 @@ class PxgridControl:
         self.client_cert = client_cert
         self.client_key = client_key
 
-    def send_rest_request(self, url_suffix, payload):
-
-        # Build the API URL
-        api_url = 'https://{}:8910/pxgrid/{}'.format(self.address, url_suffix)
+    def send_rest_request(self, api_url, payload):
 
         # Make the payload into JSON
         json_string = json.dumps(payload)
@@ -51,15 +48,19 @@ class PxgridControl:
 
     def account_activate(self):
         payload = {}
-        return self.send_rest_request('control/AccountActivate', payload)
+        # Build the API URL
+        api_url = 'https://{}:8910/pxgrid/{}'.format(self.address, 'control/AccountActivate')
+        return self.send_rest_request(api_url, payload)
 
     def service_lookup(self, service_name):
         payload = {'name': service_name}
-        return self.send_rest_request('control/ServiceLookup', payload)
+        api_url = 'https://{}:8910/pxgrid/{}'.format(self.address, 'control/ServiceLookup')
+        return self.send_rest_request(api_url, payload)
 
     def get_access_secret(self, peer_node_name):
         payload = {'peerNodeName': peer_node_name}
-        return self.send_rest_request('control/AccessSecret', payload)
+        api_url = 'https://{}:8910/pxgrid/{}'.format(self.address, 'control/AccessSecret')
+        return self.send_rest_request(api_url, payload)
 
     def get_ssl_context(self):
 

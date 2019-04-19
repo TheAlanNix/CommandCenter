@@ -11,7 +11,12 @@
                 </b-form-select>
             </b-form>
         </div>
-        <div id="page-title">Host: {{ host_ip }}</div>
+        <div id="page-title">
+            Host: <b-form-input id="host-input"
+                                size="sm"
+                                :value="this.host_ip"
+                                @change="onHostIpChange"></b-form-input>
+        </div>
         <div id="status-container" v-if="errors.length > 0">
             <div class="alert alert-danger text-left">
                 <ul>
@@ -22,9 +27,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12 col-md-6">
-                    <IseHostPanel v-if="ise_data"
-                                  :actions="actions"
-                                  :ise_data="ise_data"></IseHostPanel>
+                    <IseHostPanel :host_ip="host_ip"></IseHostPanel>
                     <div class="host-panel">
                         <div class="row">
                             <div class="col">
@@ -64,17 +67,15 @@ export default {
   props: ['host_ip'],
   watch: {
     host_ip: function () {
-      this.getIseSessionData();
       this.getEvents();
     },
   },
   data() {
     return {
-      actions: [],
       errors: [],
       events: [],
-      interval: null,
-      ise_data: [],
+      event_interval: null,
+      host_change_interval: null,
       timeframe_options: [
         { value: '1', text: 'Past Hour' },
         { value: '6', text: 'Past 6 Hours' },
@@ -93,18 +94,6 @@ export default {
     MenuBar,
   },
   methods: {
-    getActions() {
-      const path = 'http://localhost:5000/api/ise_actions';
-      axios.get(path)
-        .then((res) => {
-          this.actions = res.data.SearchResult.resources;
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.error(error);
-          this.errors.push({ message: error });
-        });
-    },
     getEvents() {
       const path = `http://localhost:5000/api/events?host_ip=${this.host_ip}&timeframe=${this.timeframe_selected}`;
       axios.get(path)
@@ -117,20 +106,11 @@ export default {
           this.errors.push({ message: error });
         });
     },
-    getIseSessionData() {
-      const path = `http://localhost:5000/api/ise_session_data/${this.host_ip}`;
-      axios.get(path)
-        .then((res) => {
-          this.ise_data = res.data;
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.error(error);
-          this.errors.push({ message: error });
-        });
-    },
     onEventUpdate(event) {
       this.selected_event = event;
+    },
+    onHostIpChange(host_ip) {
+      this.$router.push(`/host/${host_ip}`);
     },
     onTimeframeChange(value) {
       this.timeframe_selected = value;
@@ -141,12 +121,10 @@ export default {
     clearInterval(this.interval);
   },
   created() {
-    this.getActions();
     this.getEvents();
     this.interval = setInterval(() => {
       this.getEvents();
     }, 5000);
-    this.getIseSessionData();
   },
 };
 </script>
@@ -166,6 +144,7 @@ html, body {
 #page-container {
     background-color: #f7f7f9;
     min-height: 100vh;
+    padding-bottom: 15px;
     position: relative;
     width: 100%;
 }
@@ -173,6 +152,11 @@ html, body {
 #time-selection {
   float: right;
   margin: 20px 30px;
+}
+
+#host-input {
+  display: inline;
+  width: 150px;
 }
 
 #page-title {

@@ -4,12 +4,14 @@
             <div class="col">
                 <div class="host-panel-header">
                     Identity Services Engine
-                    <b-dropdown id="remediation_button"
+                    <b-dropdown v-if="mac_address" id="remediation_button"
                                 text="Remediate"
                                 size="sm"
                                 variant="outline-danger">
+                        <b-dropdown-item v-on:click="clearIseAncStatus(mac_address, '')">None</b-dropdown-item>
                         <b-dropdown-item v-for="(action, index) in actions"
-                                            :key="index">
+                                         v-on:click="setIseAncStatus(mac_address, action.name)"
+                                         :key="index">
                             {{ action.name }}
                         </b-dropdown-item>
                     </b-dropdown>
@@ -37,15 +39,32 @@
                             </span>
                         </b-col>
                     </b-row>
-                    <b-row>
+                    <b-row v-if="ise_data.adUserResolvedIdentities">
                         <b-col>
                             <span class="heading">User</span>
                         </b-col>
                     </b-row>
+                    <b-row v-if="ise_data.adUserResolvedIdentities">
+                        <b-col>
+                            <span class="content">
+                                {{ ise_data.adUserResolvedIdentities }}
+                            </span>
+                        </b-col>
+                    </b-row>
                     <b-row>
                         <b-col>
-                            <span v-if="ise_data.adUserResolvedIdentities" class="content">
-                                {{ ise_data.adUserResolvedIdentities }}
+                            <span class="heading">ANC Policy</span>
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col v-if="anc_policy">
+                            <span class="content">
+                                <b-badge variant="danger">{{ anc_policy }}</b-badge>
+                            </span>
+                        </b-col>
+                        <b-col v-else>
+                            <span class="content">
+                                <b-badge variant="secondary">None</b-badge>
                             </span>
                         </b-col>
                     </b-row>
@@ -84,8 +103,109 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
-    props: ['actions', 'ise_data'],
+  data() {
+    return {
+      actions: [],
+      anc_policy: null,
+      interval: null,
+      ise_data: [],
+      mac_address: null,
+    }
+  },
+  props: ['host_ip'],
+  watch: {
+    host_ip: function () {
+      this.getIseSessionData();
+    },
+  },
+  methods: {
+    getActions() {
+      const path = 'http://localhost:5000/api/ise_actions';
+      axios.get(path)
+        .then((res) => {
+          this.actions = res.data.SearchResult.resources;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    getIseSessionData() {
+      const path = `http://localhost:5000/api/ise_session_data/${this.host_ip}`;
+      axios.get(path)
+        .then((res) => {
+          this.ise_data = res.data;
+          if (res.data.macAddress) {
+              this.mac_address = res.data.macAddress;
+              this.getIseAncStatus(this.mac_address);
+          } else {
+              this.mac_address = null;
+          }
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    getIseAncStatus(mac_address) {
+      const path = `http://localhost:5000/api/ise_anc_status/${this.mac_address}`;
+      axios.get(path)
+        .then((res) => {
+          if (res.data.policyName) {
+              this.anc_policy = res.data.policyName;
+          } else {
+              this.anc_policy = null;
+          }
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    setIseAncStatus(mac_address, anc_policy) {
+      const path = 'http://localhost:5000/api/ise_anc_status';
+      const payload = {
+        anc_policy: anc_policy,
+        mac_address: mac_address,
+      };
+      axios.post(path, payload)
+        .then((res) => {
+          console.log(res);
+          this.getIseAncStatus();
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    clearIseAncStatus(mac_address) {
+      const path = `http://localhost:5000/api/ise_anc_status/${this.mac_address}`;
+      axios.delete(path)
+        .then((res) => {
+          console.log(res);
+          this.getIseAncStatus();
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+  },
+  created() {
+    this.getActions();
+    this.getIseSessionData();
+    this.interval = setInterval(() => {
+      //this.getIseSessionData();
+    }, 10000);
+  },
 }
 </script>
 

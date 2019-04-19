@@ -68,7 +68,7 @@ export default {
     .event-panel-table {
         //border-top: 1px solid $border-color;
         padding: 0px 5px;
-        max-height: 40vh;
+        max-height: 50vh;
         overflow-y: scroll;
     }
 }

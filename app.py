@@ -141,52 +141,108 @@ def get_ise_actions():
         exit()
 
 
-@app.route('/api/ise_anc_endpoints', methods=['GET'])
-def get_ise_anc_endpoints():
-    """A function to get the ANC Endpoints from ISE"""
+@app.route('/api/ise_anc_status/<mac_address>', methods=['GET'])
+def get_ise_anc_assignment(mac_address):
+    """A function to look up the ISE ANC assignment for a given MAC address"""
 
-    api_url = "https://{}:{}@{}:9060/ers/config/ancendpoint".format(CONFIG_DATA["ise"]["username"],
-                                                                    CONFIG_DATA["ise"]["password"],
-                                                                    CONFIG_DATA["ise"]["address"])
+    pxgrid = pxgrid_controller.PxgridControl(CONFIG_DATA["ise"]["address"],
+                                             CONFIG_DATA["ise"]["pxgrid_name"],
+                                             CONFIG_DATA["ise"]["pxgrid_cert"],
+                                             CONFIG_DATA["ise"]["pxgrid_key"])
 
-    print("Fetching {}".format(api_url))
+    # Check to see if the account is enabled
+    if pxgrid.account_activate()['accountState'] != 'ENABLED':
+        print("pxGrid Account is not enabled.")
+        return '', 403
 
-    # Placeholder for our endpoint data
-    anc_endpoints = []
+    # Lookup the session service
+    service_lookup_response = pxgrid.service_lookup('com.cisco.ise.config.anc')
 
-    headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    # Store the session service
+    session_service = service_lookup_response['services'][0]
 
-    # Get ISE ANC Endpoints
-    http_request = requests.get(api_url, headers=headers, verify=False)
+    # Build the URL to get session details
+    url = session_service['properties']['restBaseUrl'] + '/getEndpointByMacAddress'
 
-    # Check to make sure the GET was successful
-    if http_request.status_code == 200:
+    # Run the session query
+    pxgrid_response = pxgrid.send_rest_request(url, {"macAddress": mac_address})
 
-        for anc_endpoint in http_request.json()['SearchResult']['resources']:
-
-            api_url = "https://{}:{}@{}:9060/ers/config/ancendpoint/{}".format(CONFIG_DATA["ise"]["username"],
-                                                                               CONFIG_DATA["ise"]["password"],
-                                                                               CONFIG_DATA["ise"]["address"],
-                                                                               anc_endpoint["id"])
-
-            # Get ISE ANC Endpoint Details
-            endpoint_http_request = requests.get(api_url, headers=headers, verify=False)
-
-            # Check to make sure the GET was successful
-            if endpoint_http_request.status_code == 200:
-
-                # Append the endpoint to our return list
-                anc_endpoints.append(endpoint_http_request.json()['ErsAncEndpoint'])
-
-            else:
-                print('ISE Connection Failure - HTTP Return Code: {}\nResponse: {}'.format(http_request.status_code, http_request.text))
-                exit()
-
+    if pxgrid_response is not None:
+        return jsonify(pxgrid_response)
     else:
-        print('ISE Connection Failure - HTTP Return Code: {}\nResponse: {}'.format(http_request.status_code, http_request.text))
-        exit()
+        return '', 204
 
-    return jsonify(anc_endpoints)
+
+@app.route('/api/ise_anc_status', methods=['POST'])
+def set_ise_anc_assignment():
+    """A function to set the ISE ANC assignment for a given MAC address"""
+
+    pxgrid = pxgrid_controller.PxgridControl(CONFIG_DATA["ise"]["address"],
+                                             CONFIG_DATA["ise"]["pxgrid_name"],
+                                             CONFIG_DATA["ise"]["pxgrid_cert"],
+                                             CONFIG_DATA["ise"]["pxgrid_key"])
+
+    # Check to see if the account is enabled
+    if pxgrid.account_activate()['accountState'] != 'ENABLED':
+        print("pxGrid Account is not enabled.")
+        return '', 403
+
+    # Lookup the session service
+    service_lookup_response = pxgrid.service_lookup('com.cisco.ise.config.anc')
+
+    # Store the session service
+    session_service = service_lookup_response['services'][0]
+
+    # Build the URL to get session details
+    url = session_service['properties']['restBaseUrl'] + '/applyEndpointByMacAddress'
+
+    # Get the POST data from the request
+    post_data = request.get_json()
+
+    pxgrid_data = {
+        "macAddress": post_data.get("mac_address"),
+        "policyName": post_data.get("anc_policy")
+    }
+
+    # Run the session query
+    pxgrid_response = pxgrid.send_rest_request(url, pxgrid_data)
+
+    if pxgrid_response is not None:
+        return jsonify(pxgrid_response)
+    else:
+        return '', 204
+
+
+@app.route('/api/ise_anc_status/<mac_address>', methods=['DELETE'])
+def clear_ise_anc_assignment(mac_address):
+    """A function to clear the ISE ANC assignment for a given MAC address"""
+
+    pxgrid = pxgrid_controller.PxgridControl(CONFIG_DATA["ise"]["address"],
+                                             CONFIG_DATA["ise"]["pxgrid_name"],
+                                             CONFIG_DATA["ise"]["pxgrid_cert"],
+                                             CONFIG_DATA["ise"]["pxgrid_key"])
+
+    # Check to see if the account is enabled
+    if pxgrid.account_activate()['accountState'] != 'ENABLED':
+        print("pxGrid Account is not enabled.")
+        return '', 403
+
+    # Lookup the session service
+    service_lookup_response = pxgrid.service_lookup('com.cisco.ise.config.anc')
+
+    # Store the session service
+    session_service = service_lookup_response['services'][0]
+
+    # Build the URL to get session details
+    url = session_service['properties']['restBaseUrl'] + '/clearEndpointByMacAddress'
+
+    # Run the session query
+    pxgrid_response = pxgrid.send_rest_request(url, {"macAddress": mac_address})
+
+    if pxgrid_response is not None:
+        return jsonify(pxgrid_response)
+    else:
+        return '', 204
 
 
 @app.route('/api/ise_session_data/<ip_address>', methods=['GET'])
@@ -198,27 +254,22 @@ def get_ise_session_data(ip_address):
                                              CONFIG_DATA["ise"]["pxgrid_cert"],
                                              CONFIG_DATA["ise"]["pxgrid_key"])
 
-    # Loop until the key is accepted
-    while pxgrid.account_activate()['accountState'] != 'ENABLED':
-        time.sleep(60)
+    # Check to see if the account is enabled
+    if pxgrid.account_activate()['accountState'] != 'ENABLED':
+        print("pxGrid Account is not enabled.")
+        return '', 403
 
     # Lookup the session service
     service_lookup_response = pxgrid.service_lookup('com.cisco.ise.session')
 
     # Store the session service
-    # session_service = service_lookup_response['services'][0]
-
-    # Get the nodeName - this will be needed to get an access secret
-    # node_name = session_service['nodeName']
+    session_service = service_lookup_response['services'][0]
 
     # Build the URL to get session details
-    # url = session_service['properties']['restBaseUrl'] + '/getSessionByIpAddress'
-
-    # Get an access secret from the node
-    # access_secret = pxgrid.get_access_secret(node_name)['secret']
+    url = session_service['properties']['restBaseUrl'] + '/getSessionByIpAddress'
 
     # Run the session query
-    pxgrid_response = pxgrid.send_rest_request("mnt/sd/getSessionByIpAddress", {"ipAddress": ip_address})
+    pxgrid_response = pxgrid.send_rest_request(url, {"ipAddress": ip_address})
 
     if pxgrid_response is not None:
         return jsonify(pxgrid_response)
@@ -247,6 +298,9 @@ if __name__ == '__main__':
     # To prevent the scheduler from loading twice, we check to see
     # if we're in debug mode, if we are, then we wait for the second load.
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+
+        # Load events right out of the gate
+        load_events()
 
         # Run an event load and schedule future runs
         scheduler = BackgroundScheduler()

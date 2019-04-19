@@ -52,7 +52,7 @@
         </b-row>
         <b-row>
             <b-col>
-                <span class="content">{{ event.event_name }}</span>
+                <span class="content">{{ event.event_name }} ({{ event.hitCount }})</span>
             </b-col>
         </b-row>
         <b-row>
