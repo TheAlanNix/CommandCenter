@@ -1,5 +1,5 @@
 <template>
-    <div class="host-panel">
+    <div v-if="ise_data" class="host-panel">
         <div class="row">
             <div class="col">
                 <div class="host-panel-header">
@@ -70,7 +70,7 @@
                     </b-row>
                     <b-row>
                         <b-col>
-                            <span class="heading">Security Group</span>
+                            <span v-if="ise_data.ctsSecurityGroup" class="heading">Security Group</span>
                         </b-col>
                     </b-row>
                     <b-row>
@@ -140,10 +140,10 @@ export default {
         .then((res) => {
           this.ise_data = res.data;
           if (res.data.macAddress) {
-              this.mac_address = res.data.macAddress;
-              this.getIseAncStatus(this.mac_address);
+            this.mac_address = res.data.macAddress;
+            this.getIseAncStatus(this.mac_address);
           } else {
-              this.mac_address = null;
+            this.mac_address = null;
           }
         })
         .catch((error) => {
@@ -157,9 +157,9 @@ export default {
       axios.get(path)
         .then((res) => {
           if (res.data.policyName) {
-              this.anc_policy = res.data.policyName;
+            this.anc_policy = res.data.policyName;
           } else {
-              this.anc_policy = null;
+            this.anc_policy = null;
           }
         })
         .catch((error) => {
@@ -203,7 +203,7 @@ export default {
     this.getActions();
     this.getIseSessionData();
     this.interval = setInterval(() => {
-      //this.getIseSessionData();
+      // this.getIseSessionData();
     }, 10000);
   },
 }

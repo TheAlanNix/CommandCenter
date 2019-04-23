@@ -37,6 +37,7 @@
             <b-col>
                 <span class="content">
                     {{ event.target.ipAddress }}
+                    (<router-link :to="'/host/' + event.target.ipAddress">Examine Host</router-link>)
                     <ul>
                         <li v-for="(tag, index) in event.target.tags" :key="index">
                             {{ tag.name }}

@@ -28,22 +28,8 @@
             <div class="row">
                 <div class="col-12 col-md-6">
                     <IseHostPanel :host_ip="host_ip"></IseHostPanel>
-                    <div class="host-panel">
-                        <div class="row">
-                            <div class="col">
-                                <div class="host-panel-header">
-                                    Stealthwatch
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <div class="host-panel-content">
-                                    Stealthwatch Stuff Here
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <StealthwatchHostPanel :flows="flows"
+                                           :host_ip="host_ip"></StealthwatchHostPanel>
                 </div>
                 <div class="col-12 col-md-6">
                     <EventTable :events="events" @update="onEventUpdate"></EventTable>
@@ -60,6 +46,7 @@ import axios from 'axios';
 import EventDetails from './EventDetails';
 import EventTable from './EventTable';
 import IseHostPanel from './product_panels/IseHostPanel';
+import StealthwatchHostPanel from './product_panels/StealthwatchHostPanel';
 import MenuBar from './MenuBar';
 
 export default {
@@ -75,6 +62,7 @@ export default {
       errors: [],
       events: [],
       event_interval: null,
+      flows: [],
       host_change_interval: null,
       timeframe_options: [
         { value: '1', text: 'Past Hour' },
@@ -91,6 +79,7 @@ export default {
     EventDetails,
     EventTable,
     IseHostPanel,
+    StealthwatchHostPanel,
     MenuBar,
   },
   methods: {
@@ -99,6 +88,18 @@ export default {
       axios.get(path)
         .then((res) => {
           this.events = res.data.events;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    getFlows() {
+      const path = `http://localhost:5000/api/stealthwatch/flows?host_ip=${this.host_ip}&timeframe=${this.timeframe_selected}`;
+      axios.get(path)
+        .then((res) => {
+          this.flows = res.data.getFlowsResponse['flow-list'].flow;
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -115,6 +116,7 @@ export default {
     onTimeframeChange(value) {
       this.timeframe_selected = value;
       this.getEvents();
+      this.getFlows();
     },
   },
   beforeDestroy() {
@@ -125,6 +127,7 @@ export default {
     this.interval = setInterval(() => {
       this.getEvents();
     }, 5000);
+    this.getFlows();
   },
 };
 </script>
@@ -150,13 +153,13 @@ html, body {
 }
 
 #time-selection {
-  float: right;
-  margin: 20px 30px;
+    float: right;
+    margin: 20px 30px;
 }
 
 #host-input {
-  display: inline;
-  width: 150px;
+    display: inline;
+    width: 150px;
 }
 
 #page-title {

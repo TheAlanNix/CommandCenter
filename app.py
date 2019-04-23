@@ -22,6 +22,7 @@ from datetime import datetime, timedelta
 import flask
 import pymongo
 import requests
+import xmltodict
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify, render_template, request
@@ -30,10 +31,11 @@ from modules import amp_event_importer
 from modules import pxgrid_controller
 from modules import stealthwatch_event_importer
 from modules import umbrella_event_importer
+from requests.auth import HTTPBasicAuth
 
 # Configuration
-DEBUG = True
-PRODUCTION = False
+DEBUG = False
+PRODUCTION = True
 
 CONFIG_FILE = "./config.json"
 CONFIG_DATA = None
@@ -96,6 +98,14 @@ def get_events():
         query_date = datetime.utcnow().replace(microsecond=0) - timedelta(hours=timeframe)
         query_filter['timestamp'] = {'$gte': query_date}
 
+    # If a product is specified, then use it.
+    if 'product' in request.args:
+        query_filter['product'] = {'$eq': request.args['product']}
+
+    # If an event name is specified, then use it.
+    if 'event_name' in request.args:
+        query_filter['event_name'] = {'$eq': request.args['event_name']}
+
     # Get the events
     latest_events = command_center_events.find(query_filter).sort('timestamp', -1)
 
@@ -115,6 +125,68 @@ def get_events():
         response_object['events'].append(json.loads(dumps(event)))
 
     return jsonify(response_object)
+
+
+# Stealthwatch Functions
+@app.route('/api/stealthwatch/flows', methods=['GET'])
+def get_stealthwatch_flows():
+    """Method to get recent flows from Stealthwatch"""
+
+    # Build the API URL
+    api_url = "https://{}/smc/swsService/flows".format(CONFIG_DATA["stealthwatch"]["address"])
+
+    # Change the number of hours to milliseconds for Stealthwatch
+    duration = int(request.args['timeframe']) * 60 * 60 * 1000
+
+    # Get the XML that we'll send to Stealthwatch
+    xml = _get_stealthwatch_flows_xml(duration, request.args['host_ip'])
+
+    # Send the request to Stealthwatch
+    http_request = requests.post(api_url,
+                                 auth=HTTPBasicAuth(CONFIG_DATA["stealthwatch"]["username"],
+                                                    CONFIG_DATA["stealthwatch"]["password"]),
+                                 data=xml,
+                                 verify=False)
+
+    # Check to make sure the POST was successful
+    if http_request.status_code == 200:
+
+        # Return JSON formatted flows
+        return jsonify(xmltodict.parse(http_request.text)['soapenc:Envelope']['soapenc:Body'])
+
+    else:
+        print('Stealthwatch Connection Failure - HTTP Return Code: {}\nResponse: {}'.format(http_request.status_code, http_request.text))
+        exit()
+
+
+def _get_stealthwatch_flows_xml(duration, host_ip):
+    """Method to generate XML to fetch flows from Stealthwatch"""
+
+    # Build the XML
+    return_xml = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+    <soapenc:Envelope xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/envelope/\">
+        <soapenc:Body>
+            <getFlows>
+                <flow-filter max-rows=\"10000\" domain-id=\"{}\" remove-duplicates=\"true\" order-by=\"TOTAL_BYTES\" order-by-desc=\"true\" include-interface-data=\"false\">
+                    <date-selection>
+                        <time-window-selection duration=\"{}\"/>
+                    </date-selection>
+                    <host-selection>
+                        <host-pair-selection direction=\"BETWEEN_SELECTION_1_SELECTION_2\">
+                            <selection-1>
+                                <ip-address-list-selection>
+                                    <ip-address value=\"{}\" />
+                                </ip-address-list-selection>
+                            </selection-1>
+                        </host-pair-selection>
+                    </host-selection>
+                    <protocols>1,6,17</protocols>
+                </flow-filter>
+            </getFlows>
+        </soapenc:Body>
+    </soapenc:Envelope>""".format(CONFIG_DATA["stealthwatch"]["tenant"], duration, host_ip)
+
+    return return_xml
 
 
 # ISE Functions
