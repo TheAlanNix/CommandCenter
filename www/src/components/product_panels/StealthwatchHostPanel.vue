@@ -83,62 +83,8 @@ export default {
             arrows: "to",
           });
         }
-
-        return null;
-
-        var group;
-
-        if (flow.server['@ip-address'] === this.host_ip) {
-          group = 4
-        } else {
-          group = 2
-        }
-
-        var node = {
-          id: flow.server['@ip-address'],
-          label: flow.server['@ip-address'],
-          group: group
-        }
-
-        // Add Servers to the nodes
-        if (!nodes.includes(flow.server['@ip-address'])) {
-          nodes.push(flow.server['@ip-address']);
-          this.nodes.push(node);
-        }
-
-        if (flow.client['@ip-address'] === this.host_ip) {
-          group = 4
-        } else {
-          group = 2
-        }
-
-        var node = {
-          id: flow.client['@ip-address'],
-          label: flow.client['@ip-address'],
-          group: group
-        }
-
-        // Add Clients to the nodes
-        if (!nodes.includes(flow.client['@ip-address'])) {
-          nodes.push(flow.client['@ip-address']);
-          this.nodes.push(node);
-        }
-
-        var edge = {
-            source: flow.client['@ip-address'],
-            target: flow.server['@ip-address'],
-            value: 1
-        }
-
-        if (!this.edges.includes(edge)) {
-          this.edges.push(edge);
-        }
-
-        // console.log(flow.server['@ip-address']);
       });
 
-      console.log(this.nodes);
-      this.nodes = Object.values(this.nodes);
       console.log(this.nodes);
       this.loading = false;
     },
