@@ -29,6 +29,7 @@
                 <div class="col-12 col-md-6">
                     <IseHostPanel :host_ip="host_ip"></IseHostPanel>
                     <StealthwatchHostPanel :flows="flows"
+                                           :flows_loading="flows_loading"
                                            :host_ip="host_ip"></StealthwatchHostPanel>
                 </div>
                 <div class="col-12 col-md-6">
@@ -55,6 +56,7 @@ export default {
   watch: {
     host_ip: function () {
       this.getEvents();
+      this.getFlows();
     },
   },
   data() {
@@ -63,6 +65,7 @@ export default {
       events: [],
       event_interval: null,
       flows: [],
+      flows_loading: false,
       host_change_interval: null,
       timeframe_options: [
         { value: '1', text: 'Past Hour' },
@@ -96,10 +99,12 @@ export default {
         });
     },
     getFlows() {
+      this.flows_loading = true;
       const path = `http://localhost:5000/api/stealthwatch/flows?host_ip=${this.host_ip}&timeframe=${this.timeframe_selected}`;
       axios.get(path)
         .then((res) => {
           this.flows = res.data.getFlowsResponse['flow-list'].flow;
+          this.flows_loading = false;
         })
         .catch((error) => {
           // eslint-disable-next-line

@@ -179,7 +179,7 @@ def run():
     latest_event = command_center_events.find({"product": "Stealthwatch"}).sort("timestamp", -1)
 
     # If there's no latest event, the Event collection is empty, so we create a timestamp to import from.
-    if latest_event.count() > 0:
+    if latest_event.count():
         latest_event = latest_event[0]
     else:
         print("No events in database.  Setting latest_event timestamp to 30 days ago.")
@@ -200,7 +200,21 @@ def run():
     # Iterate through all fetched events
     for event in stealthwatch_events['data']['results']:
 
-        current_event_time = datetime.strptime(event["firstActiveTime"], "%Y-%m-%dT%H:%M:%S.%f+0000")
+        # A placholder to see if we've already imported this event
+        event_exists = False
+
+        # If the event ID isn't zero, then check to see if we've already imported it
+        if event["id"]:
+
+            # Query to see if the event ID exists
+            existing_event = command_center_events.find_one({"product": "Stealthwatch", "id": event["id"]})
+
+            # Print a logging message
+            if existing_event:
+                event_exists = True
+                print(f"Found that the event already exists: {event['id']}")
+
+        current_event_time = datetime.strptime(event["lastActiveTime"], "%Y-%m-%dT%H:%M:%S.%f+0000")
         latest_event_time = latest_event["timestamp"]
 
         if current_event_time > latest_event_time:
@@ -217,10 +231,19 @@ def run():
             # Add the common fields to the event
             event.update(event_common_fields)
 
-            # Store the event in the database
-            x = command_center_events.insert_one(event)
+            if event_exists:
 
-            print(x.inserted_id)
+                # Update the event in the database
+                x = command_center_events.replace_one({"_id": existing_event["_id"]}, event)
+
+                print("Updated Stealthwatch Event ID {} at MongoDB ID {}".format(event["id"], x.inserted_id))
+
+            else:
+
+                # Store the event in the database
+                x = command_center_events.insert_one(event)
+
+                print("Inserted Stealthwatch Event ID {} at MongoDB ID {}".format(event["id"], x.inserted_id))
 
 ###################
 # !!! DO WORK !!! #

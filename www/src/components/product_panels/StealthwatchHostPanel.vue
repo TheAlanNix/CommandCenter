@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col">
                 <div class="host-panel-header">
-                    <i v-show="loading" id="loading" class="fa fa-refresh fa-spin fa-1x"></i>
+                    <i v-show="flows_loading" id="loading" class="fa fa-refresh fa-spin fa-1x"></i>
                     Stealthwatch
                 </div>
             </div>
@@ -12,9 +12,12 @@
             <div class="col">
                 <div class="host-panel-content">
                     <VisNetwork id="network-view"
+                                ref="network"
                                 :edges="edges"
                                 :nodes="nodes"
                                 :options="options"
+                                :events="['stabilized']"
+                                @stabilized="onGraphStabilized"
                                 style="height: 45vh"></VisNetwork>
                 </div>
             </div>
@@ -29,10 +32,9 @@ export default {
   components: {
     VisNetwork: Network,
   },
-  props: ['flows', 'host_ip'],
+  props: ['flows', 'host_ip', 'flows_loading'],
   data() {
     return {
-      loading: true,
       edges: [],
       nodes: [],
       network: null,
@@ -86,7 +88,6 @@ export default {
       });
 
       console.log(this.nodes);
-      this.loading = false;
     },
     processNode(node) {
 
@@ -152,6 +153,9 @@ export default {
       // Get the service
       var service = edge['@service'];
 
+    },
+    onGraphStabilized(event) {
+      this.$refs.network.fit({animation: true});
     },
   },
   watch: {
