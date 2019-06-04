@@ -30,7 +30,8 @@
                     <IseHostPanel :host_ip="host_ip"></IseHostPanel>
                     <StealthwatchHostPanel :flows="flows"
                                            :flows_loading="flows_loading"
-                                           :host_ip="host_ip"></StealthwatchHostPanel>
+                                           :host_ip="host_ip"
+                                           :host_snapshot="host_snapshot"></StealthwatchHostPanel>
                 </div>
                 <div class="col-12 col-md-6">
                     <EventTable :events="events" @update="onEventUpdate"></EventTable>
@@ -56,6 +57,7 @@ export default {
   watch: {
     host_ip: function () {
       this.getEvents();
+      this.resetFlowInterval();
       this.getFlows();
     },
   },
@@ -66,7 +68,8 @@ export default {
       event_interval: null,
       flows: [],
       flows_loading: false,
-      host_change_interval: null,
+      flows_interval: null,
+      host_snapshot: [],
       timeframe_options: [
         { value: '1', text: 'Past Hour' },
         { value: '6', text: 'Past 6 Hours' },
@@ -112,6 +115,24 @@ export default {
           this.errors.push({ message: error });
         });
     },
+    getHostSnapshot() {
+      const path = `http://localhost:5000/api/stealthwatch/host-snapshot?host_ip=${this.host_ip}`;
+      axios.get(path)
+        .then((res) => {
+          this.host_snapshot = res.data.getHostSnapshotResponse['host-snapshot'];
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.push({ message: error });
+        });
+    },
+    resetFlowInterval() {
+      clearInterval(this.flows_interval);
+      this.flows_interval = setInterval(() => {
+        this.getFlows();
+      }, 60000)
+    },
     onEventUpdate(event) {
       this.selected_event = event;
     },
@@ -121,18 +142,21 @@ export default {
     onTimeframeChange(value) {
       this.timeframe_selected = value;
       this.getEvents();
+      this.resetFlowInterval();
       this.getFlows();
     },
   },
   beforeDestroy() {
-    clearInterval(this.interval);
+    clearInterval(this.event_interval);
+    clearInterval(this.flows_interval);
   },
   created() {
     this.getEvents();
-    this.interval = setInterval(() => {
+    this.event_interval = setInterval(() => {
       this.getEvents();
     }, 5000);
     this.getFlows();
+    this.resetFlowInterval();
   },
 };
 </script>

@@ -128,9 +128,37 @@ def get_events():
 
 
 # Stealthwatch Functions
+@app.route('/api/stealthwatch/host-snapshot', methods=['GET'])
+def get_stealthwatch_host_snapshot():
+    """A function to get host snapshots from Stealthwatch"""
+
+    # Build the API URL
+    api_url = "https://{}/smc/swsService/hosts".format(CONFIG_DATA["stealthwatch"]["address"])
+
+    # Get the XML that we'll send to Stealthwatch
+    xml = _get_stealthwatch_host_snapshot_xml(request.args['host_ip'])
+
+    # Send the request to Stealthwatch
+    http_request = requests.post(api_url,
+                                 auth=HTTPBasicAuth(CONFIG_DATA["stealthwatch"]["username"],
+                                                    CONFIG_DATA["stealthwatch"]["password"]),
+                                 data=xml,
+                                 verify=False)
+
+    # Check to make sure the POST was successful
+    if http_request.status_code == 200:
+
+        # Return JSON formatted flows
+        return jsonify(xmltodict.parse(http_request.text)['soapenc:Envelope']['soapenc:Body'])
+
+    else:
+        print('Stealthwatch Connection Failure - HTTP Return Code: {}\nResponse: {}'.format(http_request.status_code, http_request.text))
+        exit()
+
+
 @app.route('/api/stealthwatch/flows', methods=['GET'])
 def get_stealthwatch_flows():
-    """Method to get recent flows from Stealthwatch"""
+    """A function to get recent flows from Stealthwatch"""
 
     # Build the API URL
     api_url = "https://{}/smc/swsService/flows".format(CONFIG_DATA["stealthwatch"]["address"])
@@ -159,8 +187,28 @@ def get_stealthwatch_flows():
         exit()
 
 
+def _get_stealthwatch_host_snapshot_xml(host_ip):
+    """A function to generate XML to fetch host snapshots from Stealthwatch"""
+
+    # Build the XML
+    return_xml = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+    <soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">
+        <soapenv:Body>
+            <getHostSnapshot>
+                <host-filter domain-id=\"{}\">
+                    <host-selection>
+                        <ip-address-selection value=\"{}\"/>
+                    </host-selection>
+                </host-filter>
+            </getHostSnapshot>
+        </soapenv:Body>
+    </soapenv:Envelope>""".format(CONFIG_DATA["stealthwatch"]["tenant"], host_ip)
+
+    return return_xml
+
+
 def _get_stealthwatch_flows_xml(duration, host_ip):
-    """Method to generate XML to fetch flows from Stealthwatch"""
+    """A function to generate XML to fetch flows from Stealthwatch"""
 
     # Build the XML
     return_xml = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>

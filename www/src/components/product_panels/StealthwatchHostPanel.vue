@@ -4,7 +4,7 @@
             <div class="col">
                 <div class="host-panel-header">
                     <i v-show="flows_loading" id="loading" class="fa fa-refresh fa-spin fa-1x"></i>
-                    Stealthwatch
+                    Flow Graph
                 </div>
             </div>
         </div>
@@ -32,7 +32,7 @@ export default {
   components: {
     VisNetwork: Network,
   },
-  props: ['flows', 'host_ip', 'flows_loading'],
+  props: ['flows', 'flows_loading', 'host_ip', 'host_snapshot'],
   data() {
     return {
       edges: [],
@@ -159,7 +159,10 @@ export default {
     },
   },
   watch: {
-    flows: function () {
+    flows: function (newVal, oldVal) {
+      if (oldVal.length == 0) {
+        this.$refs.network.moveTo({ scale: 0.3 });
+      }
       this.processFlows();
     },
   },
