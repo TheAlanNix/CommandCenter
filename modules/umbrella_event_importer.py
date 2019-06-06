@@ -10,7 +10,7 @@ import json
 import pymongo
 import requests
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from requests.auth import HTTPBasicAuth
 
 CONFIG_FILE = "./config.json"
@@ -35,7 +35,7 @@ def get_events(start_date=None):
     """Get Umbrella events"""
 
     # Format the date for AMP
-    start_date = int(start_date.timestamp())
+    start_date = int(start_date.replace(tzinfo=timezone.utc).timestamp())
 
     # Build the API URL
     api_url = "https://reports.api.umbrella.com/v1/organizations/{}/security-activity?limit=500&start={}".format(CONFIG_DATA["umbrella"]["org_id"], start_date)
