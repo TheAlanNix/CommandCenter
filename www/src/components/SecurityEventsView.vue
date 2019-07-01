@@ -249,6 +249,12 @@ export default {
       // Iterate through all events
       events.forEach(event => {
 
+        var srcIp = event.src_ip;
+
+        if (srcIp.length > 15) {
+          srcIp = `${srcIp.substring(0, 15)}...`;
+        }
+
         // Get the index of the IP
         var eventIndex = this.inArrayWithAttribute(event_counts, 'name', event.src_ip)
 

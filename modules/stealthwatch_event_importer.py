@@ -201,7 +201,8 @@ def run():
     for event in stealthwatch_events['data']['results']:
 
         # Filters for some really chatty event types
-        if event["securityEventType"] is 310:
+        #   310: Flow_Denied
+        if event["securityEventType"] in [310]:
             continue
 
         # A placholder to see if we've already imported this event
@@ -217,10 +218,6 @@ def run():
             if existing_event:
                 event_exists = True
                 print(f"Found that the event already exists: {event['id']}")
-
-        else:
-            # Skip events with unassigned IDs for the moment...
-            continue
 
         current_event_time = datetime.strptime(event["lastActiveTime"], "%Y-%m-%dT%H:%M:%S.%f+0000")
         latest_event_time = latest_event["timestamp"]
