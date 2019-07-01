@@ -40,7 +40,7 @@
                                 @unselected="onEventNameUnselected"></PieChart>
                 </div>
                 <div class="col-12 col-md-4">
-                    <PieChart title="Events by Source IP"
+                    <PieChart title="Events by Source IP (Top 25)"
                                 :chart_data="events_by_source"
                                 @selected="onSourceSelected"
                                 @unselected="onSourceUnselected"></PieChart>
@@ -94,7 +94,7 @@ export default {
         { value: '168', text: 'Past Week' },
         { value: '744', text: 'Past Month' },
       ],
-      timeframe_selected: '1',
+      timeframe_selected: '6',
       selected_event: null,
     };
   },
@@ -168,99 +168,103 @@ export default {
       this.timeframe_selected = value;
       this.getEvents();
     },
+    inArrayWithAttribute(array, attr, value) {
+      for (var i = 0; i < array.length; i ++) {
+        if(array[i][attr] === value) {
+          return i;
+        }
+      }
+      return -1;
+    },
+    sortCompare(a, b) {
+      if (a.y < b.y) {
+        return 1;
+      }
+      if (a.y > b.y) {
+        return -1;
+      }
+      return 0;
+    },
     summarizeEventNames(events) {
       var event_counts = [];
-      var event_names = [];
 
       // Iterate through all events
       events.forEach(event => {
 
-        // If we've already seen this event name, increment it's count
-        if (event_names.includes(event.event_name)) {
+        // Get the index of the Event Name
+        var eventIndex = this.inArrayWithAttribute(event_counts, 'name', event.event_name);
 
-          // Go through the event_counts and increment when we get a event name match
-          event_counts.forEach(function(event_type) {
-            if (event_type.name == event.event_name) {
-              event_type.y ++;
-            }
-          });
-
-        } else {
-          
-          // Push the event name onto our array
-          event_names.push(event.event_name);
-
+        // Look to see if the Event Name exists
+        if (eventIndex === -1) {
           // Store the event name
           event_counts.push({
             name: event.event_name,
             y: 1
           });
+        } else {
+          // Iterate the count
+          event_counts[eventIndex].y++;
         }
       });
+
+      // Sort the array by the 'y' property
+      event_counts.sort(this.sortCompare);
 
       return event_counts;
     },
     summarizeProducts(events) {
       var event_counts = [];
-      var event_products = [];
 
       // Iterate through all events
       events.forEach(event => {
 
-        // If we've already seen this product, increment it's count
-        if (event_products.includes(event.product)) {
+        // Get the index of the Product
+        var eventIndex = this.inArrayWithAttribute(event_counts, 'name', event.product)
 
-          // Go through the event_counts and increment when we get a product match
-          event_counts.forEach(function(event_type) {
-            if (event_type.name == event.product) {
-              event_type.y ++;
-            }
-          });
-
-        } else {
-          
-          // Push the product onto our array
-          event_products.push(event.product);
-
-          // Store the product
+        // Look to see if the Product exists
+        if (eventIndex === -1) {
+          // Store the Product
           event_counts.push({
             name: event.product,
             y: 1
           });
+        } else {
+          // Iterate the count
+          event_counts[eventIndex].y++;
         }
       });
+
+      // Sort the array by the 'y' property
+      event_counts.sort(this.sortCompare);
 
       return event_counts;
     },
     summarizeSourceIps(events) {
       var event_counts = [];
-      var event_hosts = [];
 
       // Iterate through all events
       events.forEach(event => {
 
-        // If we've already seen this host, increment it's count
-        if (event_hosts.includes(event.src_ip)) {
+        // Get the index of the IP
+        var eventIndex = this.inArrayWithAttribute(event_counts, 'name', event.src_ip)
 
-          // Go through the event_counts and increment when we get a product match
-          event_counts.forEach(function(event_src) {
-            if (event_src.name == event.src_ip) {
-              event_src.y ++;
-            }
-          });
-
-        } else {
-          
-          // Push the host onto our array
-          event_hosts.push(event.src_ip);
-
-          // Store the event host
+        // Look to see if the Product exists
+        if (eventIndex === -1) {
+          // Store the Product
           event_counts.push({
             name: event.src_ip,
             y: 1
           });
+        } else {
+          // Iterate the count
+          event_counts[eventIndex].y++;
         }
       });
+
+      // Sort the array by the 'y' property
+      event_counts.sort(this.sortCompare);
+
+      event_counts = event_counts.slice(0, 25);
 
       return event_counts;
     },
@@ -272,7 +276,7 @@ export default {
     this.getEvents();
     this.interval = setInterval(() => {
       this.getEvents();
-    }, 5000);
+    }, 30000);
   },
 };
 </script>

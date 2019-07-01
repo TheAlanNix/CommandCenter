@@ -35,14 +35,14 @@ export default {
           text: this.title,
         },
         tooltip: {
-          enabled: true,
+          enabled: false,
         },
         plotOptions: {
           pie: {
             allowPointSelect: true,
             cursor: 'pointer',
             dataLabels: {
-                enabled: false,
+                enabled: true,
                 format: '<b>{point.name}</b> ({point.y})',
             },
             innerSize: 150,

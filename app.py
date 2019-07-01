@@ -424,7 +424,7 @@ if __name__ == '__main__':
 
         # Run an event load and schedule future runs
         scheduler = BackgroundScheduler()
-        scheduler.add_job(func=load_events, trigger="interval", seconds=30)
+        scheduler.add_job(func=load_events, trigger="interval", seconds=60)
         scheduler.start()
 
         # Shut down the scheduler when exiting the app
