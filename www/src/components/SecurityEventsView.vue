@@ -11,11 +11,11 @@
                 </b-form-select>
             </b-form>
         </div>
-        <div id="page-title">{{ page_title }}</div>
+        <div id="page-title">{{ page_title }} <i v-show="events_loading" id="loading" class="fa fa-refresh fa-spin fa-1x"></i></div>
         <div id="status-container" v-if="errors.length > 0">
             <div class="alert alert-danger text-left">
                 <ul>
-                    <li v-for="(error, index) in errors" :key="index">{{ error.message }}</li>
+                    <li>{{ errors[0].message }}</li>
                 </ul>
             </div>
         </div>
@@ -80,6 +80,7 @@ export default {
     return {
       errors: [],
       events: [],
+      events_loading: false,
       events_by_name: [],
       events_by_product: [],
       events_by_source: [],
@@ -118,6 +119,7 @@ export default {
       this.getEvents();
     },
     getEvents() {
+      this.events_loading = true;
       var path = `http://${location.hostname}:5000/api/events?timeframe=${this.timeframe_selected}`;
       console.log(path);
       if (this.filter_product)
@@ -128,11 +130,13 @@ export default {
         .then((res) => {
           console.log(res.data);
           this.events = res.data.events;
+          this.events_loading = false;
         })
         .catch((error) => {
           // eslint-disable-next-line
           console.error(error);
-          this.errors.push({ message: error });
+          this.errors.unshift({ message: error });
+          this.events_loading = false;
         });
     },
     onEventUpdate(event) {

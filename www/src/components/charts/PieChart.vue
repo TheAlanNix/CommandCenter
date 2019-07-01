@@ -60,9 +60,6 @@ export default {
       },
     };
   },
-  mounted() {
-    console.log(this.highcharts);
-  },
   methods: {
     selected(event) {
       this.$emit('selected', event.target.name);
