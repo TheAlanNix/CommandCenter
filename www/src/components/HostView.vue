@@ -90,7 +90,7 @@ export default {
   },
   methods: {
     getEvents() {
-      const path = `http://localhost:5000/api/events?host_ip=${this.host_ip}&timeframe=${this.timeframe_selected}`;
+      const path = `http://${location.hostname}:5000/api/events?host_ip=${this.host_ip}&timeframe=${this.timeframe_selected}`;
       axios.get(path)
         .then((res) => {
           this.events = res.data.events;
@@ -103,7 +103,7 @@ export default {
     },
     getFlows() {
       this.flows_loading = true;
-      const path = `http://localhost:5000/api/stealthwatch/flows?host_ip=${this.host_ip}&timeframe=${this.timeframe_selected}`;
+      const path = `http://${location.hostname}:5000/api/stealthwatch/flows?host_ip=${this.host_ip}&timeframe=${this.timeframe_selected}`;
       axios.get(path)
         .then((res) => {
           this.flows = res.data.getFlowsResponse['flow-list'].flow;
@@ -116,7 +116,7 @@ export default {
         });
     },
     getHostSnapshot() {
-      const path = `http://localhost:5000/api/stealthwatch/host-snapshot?host_ip=${this.host_ip}`;
+      const path = `http://${location.hostname}:5000/api/stealthwatch/host-snapshot?host_ip=${this.host_ip}`;
       axios.get(path)
         .then((res) => {
           this.host_snapshot = res.data.getHostSnapshotResponse['host-snapshot'];

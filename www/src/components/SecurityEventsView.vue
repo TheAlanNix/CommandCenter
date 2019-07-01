@@ -118,7 +118,8 @@ export default {
       this.getEvents();
     },
     getEvents() {
-      var path = `http://localhost:5000/api/events?timeframe=${this.timeframe_selected}`;
+      var path = `http://${location.hostname}:5000/api/events?timeframe=${this.timeframe_selected}`;
+      console.log(path);
       if (this.filter_product)
         path = path + `&product=${encodeURIComponent(this.filter_product)}`;
       if (this.filter_event_name)

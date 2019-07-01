@@ -123,7 +123,7 @@ export default {
   },
   methods: {
     getActions() {
-      const path = 'http://localhost:5000/api/ise_actions';
+      const path = `http://${location.hostname}:5000/api/ise_actions`;
       axios.get(path)
         .then((res) => {
           this.actions = res.data.SearchResult.resources;
@@ -135,7 +135,7 @@ export default {
         });
     },
     getIseSessionData() {
-      const path = `http://localhost:5000/api/ise_session_data/${this.host_ip}`;
+      const path = `http://${location.hostname}:5000/api/ise_session_data/${this.host_ip}`;
       axios.get(path)
         .then((res) => {
           this.ise_data = res.data;
@@ -153,7 +153,7 @@ export default {
         });
     },
     getIseAncStatus(mac_address) {
-      const path = `http://localhost:5000/api/ise_anc_status/${this.mac_address}`;
+      const path = `http://${location.hostname}:5000/api/ise_anc_status/${this.mac_address}`;
       axios.get(path)
         .then((res) => {
           if (res.data.policyName) {
@@ -169,7 +169,7 @@ export default {
         });
     },
     setIseAncStatus(mac_address, anc_policy) {
-      const path = 'http://localhost:5000/api/ise_anc_status';
+      const path = `http://${location.hostname}:5000/api/ise_anc_status`;
       const payload = {
         anc_policy: anc_policy,
         mac_address: mac_address,
@@ -186,7 +186,7 @@ export default {
         });
     },
     clearIseAncStatus(mac_address) {
-      const path = `http://localhost:5000/api/ise_anc_status/${this.mac_address}`;
+      const path = `http://${location.hostname}:5000/api/ise_anc_status/${this.mac_address}`;
       axios.delete(path)
         .then((res) => {
           console.log(res);
