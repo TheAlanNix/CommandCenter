@@ -256,13 +256,13 @@ export default {
         }
 
         // Get the index of the IP
-        var eventIndex = this.inArrayWithAttribute(event_counts, 'name', event.src_ip)
+        var eventIndex = this.inArrayWithAttribute(event_counts, 'name', srcIp)
 
         // Look to see if the Product exists
         if (eventIndex === -1) {
           // Store the Product
           event_counts.push({
-            name: event.src_ip,
+            name: srcIp,
             y: 1
           });
         } else {
