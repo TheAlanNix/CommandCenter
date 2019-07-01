@@ -218,6 +218,10 @@ def run():
                 event_exists = True
                 print(f"Found that the event already exists: {event['id']}")
 
+        else:
+            # Skip events with unassigned IDs for the moment...
+            continue
+
         current_event_time = datetime.strptime(event["lastActiveTime"], "%Y-%m-%dT%H:%M:%S.%f+0000")
         latest_event_time = latest_event["timestamp"]
 
