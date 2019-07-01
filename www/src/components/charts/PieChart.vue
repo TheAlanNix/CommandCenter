@@ -62,10 +62,10 @@ export default {
   },
   methods: {
     selected(event) {
-      this.$emit('selected', event.target.name);
+      this.$emit('selected', event.target.ref);
     },
     unselected(event) {
-      this.$emit('unselected', event.target.name);
+      this.$emit('unselected', event.target.ref);
     },
   },
   watch: {

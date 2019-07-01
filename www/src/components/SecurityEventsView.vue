@@ -203,6 +203,7 @@ export default {
           // Store the event name
           event_counts.push({
             name: event.event_name,
+            ref: event.event_name,
             y: 1
           });
         } else {
@@ -230,6 +231,7 @@ export default {
           // Store the Product
           event_counts.push({
             name: event.product,
+            ref: event.product,
             y: 1
           });
         } else {
@@ -263,6 +265,7 @@ export default {
           // Store the Product
           event_counts.push({
             name: srcIp,
+            ref: event.src_ip,
             y: 1
           });
         } else {
