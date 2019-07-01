@@ -201,7 +201,7 @@ def run():
     for event in stealthwatch_events['data']['results']:
 
         # Filters for some really chatty event types
-        if event["securityEventType"] is 301:
+        if event["securityEventType"] is 310:
             continue
 
         # A placholder to see if we've already imported this event
