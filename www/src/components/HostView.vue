@@ -77,7 +77,7 @@ export default {
         { value: '168', text: 'Past Week' },
         { value: '744', text: 'Past Month' },
       ],
-      timeframe_selected: '24',
+      timeframe_selected: '1',
       selected_event: null,
     };
   },

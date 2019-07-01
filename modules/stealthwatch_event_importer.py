@@ -200,6 +200,10 @@ def run():
     # Iterate through all fetched events
     for event in stealthwatch_events['data']['results']:
 
+        # Filters for some really chatty event types
+        if event["event_name"] is "Flow_Denied":
+            continue
+
         # A placholder to see if we've already imported this event
         event_exists = False
 
