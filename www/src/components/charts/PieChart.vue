@@ -35,7 +35,9 @@ export default {
           text: this.title,
         },
         tooltip: {
-          enabled: false,
+          enabled: true,
+          headerFormat: "<b>{point.key}</b><br/>",
+          pointFormat: "Count: {point.y}",
         },
         plotOptions: {
           pie: {
@@ -43,7 +45,14 @@ export default {
             cursor: 'pointer',
             dataLabels: {
                 enabled: true,
-                format: '<b>{point.name}</b> ({point.y})',
+                formatter: function() {
+                  let maxLength = 15
+                  if (this.key.length > maxLength) {
+                    let newKey = `${this.key.substring(0, maxLength)}...`;
+                    return `<b>${newKey}</b> (${this.y})`;
+                  }
+                  return `<b>${this.key}</b> (${this.y})`;
+                },
             },
             innerSize: 150,
             minSize: 180,
