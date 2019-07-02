@@ -15,7 +15,8 @@
                                 selectedVariant="warning"
                                 :items="events"
                                 :fields="fields"
-                                @row-selected="rowSelected">
+                                @row-selected="rowSelected"
+                                ref="eventTable">
                         <template slot="empty" slot-scope="scope">
                             <div class="text-center my-2">
                                 {{ scope.emptyText }}. You're completely secure. :-)
@@ -34,16 +35,32 @@ export default {
   data() {
     return {
       fields: ['product', 'event_name', 'event_details', { key: 'formatted_timestamp', label: 'Timestamp' }],
+      selectedEvent: null,
     };
   },
   methods: {
     rowSelected(items) {
       if (items.length > 0) {
-        this.$emit('update', items[0]);
+        this.selectedEvent = items[0];
+        this.$emit('rowSelected', items[0]);
       } else {
-        this.$emit('update', null);
+        this.selectedEvent = null;
+        this.$emit('rowSelected', null);
       }
     },
+    selectFirstEvent() {
+      if (this.selectedEvent === null) {
+        let eventTable = this.$refs.eventTable.$el;
+        let tableBody = eventTable.getElementsByTagName('tbody')[0];
+        let tableRows = tableBody.getElementsByTagName('tr');
+        tableRows[0].click();
+      }
+    },
+  },
+  watch: {
+    // events: function() {
+    //   this.selectFirstEvent();
+    // },
   },
 };
 </script>

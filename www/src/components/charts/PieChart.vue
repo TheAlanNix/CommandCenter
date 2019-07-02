@@ -46,6 +46,7 @@ export default {
                 format: '<b>{point.name}</b> ({point.y})',
             },
             innerSize: 150,
+            minSize: 180,
             point: {
               events: {
                 select: this.selected,
@@ -62,10 +63,10 @@ export default {
   },
   methods: {
     selected(event) {
-      this.$emit('selected', event.target.ref);
+      this.$emit('selected', event.target.name);
     },
     unselected(event) {
-      this.$emit('unselected', event.target.ref);
+      this.$emit('unselected', event.target.name);
     },
   },
   watch: {

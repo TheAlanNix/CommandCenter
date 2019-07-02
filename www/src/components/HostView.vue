@@ -34,7 +34,7 @@
                                            :host_snapshot="host_snapshot"></StealthwatchHostPanel>
                 </div>
                 <div class="col-12 col-md-6">
-                    <EventTable :events="events" @update="onEventUpdate"></EventTable>
+                    <EventTable :events="events" @rowSelected="onEventUpdate"></EventTable>
                     <EventDetails v-if="selected_event"
                                   :selected_event="selected_event"></EventDetails>
                 </div>

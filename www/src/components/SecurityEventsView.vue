@@ -48,7 +48,7 @@
             </div>
             <div class="row">
                 <div class="col-12 col-md-6">
-                    <EventTable :events="events" @update="onEventUpdate"></EventTable>
+                    <EventTable :events="events" @rowSelected="onEventUpdate"></EventTable>
                 </div>
                 <div class="col-12 col-md-6">
                     <EventDetails v-if="selected_event"
@@ -107,9 +107,9 @@ export default {
   },
   watch: {
     events: function (val) {
-      this.events_by_name = this.summarizeEventNames(val);
-      this.events_by_product = this.summarizeProducts(val);
-      this.events_by_source = this.summarizeSourceIps(val);
+      this.events_by_name = this.summarizePieChartData(val, 'event_name');
+      this.events_by_product = this.summarizePieChartData(val, 'product');
+      this.events_by_source = this.summarizePieChartData(val, 'src_ip', 25);
     },
   },
   methods: {
@@ -189,97 +189,37 @@ export default {
       }
       return 0;
     },
-    summarizeEventNames(events) {
-      var event_counts = [];
+    summarizePieChartData(events, property, count = 0) {
+      let eventCounts = [];
 
       // Iterate through all events
       events.forEach(event => {
 
-        // Get the index of the Event Name
-        var eventIndex = this.inArrayWithAttribute(event_counts, 'name', event.event_name);
+        // Get the index of the event property
+        var eventIndex = this.inArrayWithAttribute(eventCounts, 'name', event[property]);
 
         // Look to see if the Event Name exists
         if (eventIndex === -1) {
           // Store the event name
-          event_counts.push({
-            name: event.event_name,
-            ref: event.event_name,
+          eventCounts.push({
+            name: event[property],
             y: 1
           });
         } else {
           // Iterate the count
-          event_counts[eventIndex].y++;
+          eventCounts[eventIndex].y++;
         }
       });
 
       // Sort the array by the 'y' property
-      event_counts.sort(this.sortCompare);
+      eventCounts.sort(this.sortCompare);
 
-      return event_counts;
-    },
-    summarizeProducts(events) {
-      var event_counts = [];
+      // Get the top X
+      if (count > 0) {
+        eventCounts = eventCounts.slice(0, count);
+      }
 
-      // Iterate through all events
-      events.forEach(event => {
-
-        // Get the index of the Product
-        var eventIndex = this.inArrayWithAttribute(event_counts, 'name', event.product)
-
-        // Look to see if the Product exists
-        if (eventIndex === -1) {
-          // Store the Product
-          event_counts.push({
-            name: event.product,
-            ref: event.product,
-            y: 1
-          });
-        } else {
-          // Iterate the count
-          event_counts[eventIndex].y++;
-        }
-      });
-
-      // Sort the array by the 'y' property
-      event_counts.sort(this.sortCompare);
-
-      return event_counts;
-    },
-    summarizeSourceIps(events) {
-      var event_counts = [];
-
-      // Iterate through all events
-      events.forEach(event => {
-
-        var srcIp = event.src_ip;
-
-        if (srcIp.length > 15) {
-          srcIp = `${srcIp.substring(0, 15)}...`;
-        }
-
-        // Get the index of the IP
-        var eventIndex = this.inArrayWithAttribute(event_counts, 'name', srcIp)
-
-        // Look to see if the Product exists
-        if (eventIndex === -1) {
-          // Store the Product
-          event_counts.push({
-            name: srcIp,
-            ref: event.src_ip,
-            y: 1
-          });
-        } else {
-          // Iterate the count
-          event_counts[eventIndex].y++;
-        }
-      });
-
-      // Sort the array by the 'y' property
-      event_counts.sort(this.sortCompare);
-
-      event_counts = event_counts.slice(0, 25);
-
-      return event_counts;
+      return eventCounts;
     },
   },
   beforeDestroy() {

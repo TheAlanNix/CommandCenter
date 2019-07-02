@@ -7,7 +7,10 @@
         </b-row>
         <b-row>
             <b-col>
-                <span class="content">{{ event.formatted_timestamp }}</span>
+                <span class="content">
+                    <div>First Active Time: {{ event.firstActiveTime }}</div>
+                    <div>Last Active Time: {{ event.lastActiveTime }}</div>
+                </span>
             </b-col>
         </b-row>
         <b-row>
