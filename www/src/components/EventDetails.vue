@@ -16,6 +16,8 @@
                 </div>
                 <AmpEvent v-if="selected_event.product == 'AMP for Endpoints'"
                                         :event="selected_event"></AmpEvent>
+                <FirepowerEvent v-if="selected_event.product == 'Firepower'"
+                                        :event="selected_event"></FirepowerEvent>
                 <StealthwatchEvent v-if="selected_event.product == 'Stealthwatch'"
                                         :event="selected_event"></StealthwatchEvent>
                 <UmbrellaEvent v-if="selected_event.product == 'Umbrella'"
@@ -27,6 +29,7 @@
 
 <script>
 import AmpEvent from './event_types/AmpEvent';
+import FirepowerEvent from './event_types/FirepowerEvent';
 import StealthwatchEvent from './event_types/StealthwatchEvent';
 import UmbrellaEvent from './event_types/UmbrellaEvent';
 
@@ -34,6 +37,7 @@ export default {
   props: ['selected_event'],
   components: {
     AmpEvent,
+    FirepowerEvent,
     StealthwatchEvent,
     UmbrellaEvent,
   },
