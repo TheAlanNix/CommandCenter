@@ -6,17 +6,14 @@ services:
     image: "mongo"
     ports:
       - "27017:27017"
-    restart_policy:
-      condition: any
+    restart: any
   amp_events:
     build: "./AmpEventImporter"
     container_name: ccc_amp_event_importer
     depends_on: 
       - mongodb
     env_file: .env
-    restart_policy:
-      condition: on-failure
-      delay: 30
+    restart: on-failure
   firepower_syslog:
     build: "./FirepowerSyslogImporter"
     container_name: ccc_firepower_syslog
@@ -25,5 +22,4 @@ services:
     env_file: .env
     ports:
       - "4514:4514/udp"
-    restart_policy:
-      condition: on-failure
+    restart: on-failure
