@@ -6,7 +6,7 @@ services:
     image: "mongo"
     ports:
       - "27017:27017"
-    restart: any
+    restart: always
   amp_events:
     build: "./AmpEventImporter"
     container_name: ccc_amp_event_importer
