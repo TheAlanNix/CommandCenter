@@ -3,9 +3,9 @@ services:
   mongodb:
     container_name: ccc_mongodb
     environment:
+      MONGO_INITDB_DATABASE: "${MONGO_INITDB_DATABASE}"
       MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
-      MONGO_INITDB_DATABASE: "${MONGO_INITDB_DATABASE}"
     image: "mongo"
     ports:
       - "27017:27017"
@@ -13,8 +13,15 @@ services:
   firepower_syslog:
     build: "./FirepowerSyslogImporter"
     container_name: ccc_firepower_syslog
+    depends_on: 
+      - mongodb
+    environment:
+      MONGO_INITDB_ADDRESS: mongodb
+      MONGO_INITDB_DATABASE: "${MONGO_INITDB_DATABASE}"
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
+    links:
+      - 
     ports:
       - "4514:4514/udp"
     restart: always
-    volumes:
-      - .env:/app/.env
