@@ -14,7 +14,7 @@ services:
     build: "./FirepowerSyslogImporter"
     container_name: ccc_firepower_syslog
     ports:
-      - "4514/udp:4514/udp"
+      - "4514:4514/udp"
     restart: always
     volumes:
       - .env:/app/.env
