@@ -2,26 +2,28 @@ version: '3'
 services:
   mongodb:
     container_name: ccc_mongodb
-    environment:
-      MONGO_INITDB_DATABASE: "${MONGO_INITDB_DATABASE}"
-      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
-      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
+    env_file: .env
     image: "mongo"
     ports:
       - "27017:27017"
-    restart: always
+    restart_policy:
+      condition: any
+  amp_events:
+    build: "./AmpEventImporter"
+    container_name: ccc_amp_event_importer
+    depends_on: 
+      - mongodb
+    env_file: .env
+    restart_policy:
+      condition: on-failure
+      delay: 30
   firepower_syslog:
     build: "./FirepowerSyslogImporter"
     container_name: ccc_firepower_syslog
-    depends_on: 
+    depends_on:
       - mongodb
-    environment:
-      MONGO_INITDB_ADDRESS: mongodb
-      MONGO_INITDB_DATABASE: "${MONGO_INITDB_DATABASE}"
-      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
-      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
-    links:
-      - 
+    env_file: .env
     ports:
       - "4514:4514/udp"
-    restart: always
+    restart_policy:
+      condition: on-failure
