@@ -150,6 +150,18 @@ def get_events(start_date=None):
         exit()
 
 
+def clear_events(event_table):
+    """Clear Stealthwatch events with an ID of '0'"""
+
+    # Setup a query for Stealthwatch events with ID '0'
+    sw_zero_query = {"product": "Stealthwatch", "id": 0}
+
+    # Delete the events with ID '0'
+    results = event_table.delete_many(sw_zero_query)
+
+    print(results.deleted_count, " documents deleted.")
+
+
 def event_name_lookup(id, event_names):
     """Get the human readable event name"""
 
@@ -175,8 +187,11 @@ def run():
     # Use the 'events' collection from the 'commandcenter' database
     command_center_events = command_center_db['events']
 
+    # Delete SW Events with ID '0'
+    clear_events(command_center_events)
+
     # Get the latest 'Stealthwatch' event
-    latest_event = command_center_events.find({"product": "Stealthwatch"}).sort("timestamp", -1)
+    latest_event = command_center_events.find({"product": "Stealthwatch", "id": {"$ne": 0}}).sort("timestamp", -1)
 
     # If there's no latest event, the Event collection is empty, so we create a timestamp to import from.
     if latest_event.count():
