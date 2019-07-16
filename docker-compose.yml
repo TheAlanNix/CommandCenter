@@ -23,3 +23,10 @@ services:
     ports:
       - "4514:4514/udp"
     restart: on-failure
+  umbrella_events:
+    build: "./UmbrellaEventImporter"
+    container_name: ccc_umbrella_event_importer
+    depends_on: 
+      - mongodb
+    env_file: .env
+    restart: on-failure

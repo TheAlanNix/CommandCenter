@@ -29,7 +29,6 @@ from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from modules import pxgrid_controller
 from modules import stealthwatch_event_importer
-from modules import umbrella_event_importer
 from requests.auth import HTTPBasicAuth
 
 # Configuration
@@ -399,7 +398,6 @@ def get_ise_session_data(ip_address):
 def load_events():
     """A function to trigger all event imports into the database"""
 
-    umbrella_event_importer.run()
     stealthwatch_event_importer.run()
 
 

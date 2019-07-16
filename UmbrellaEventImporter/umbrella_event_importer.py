@@ -2,33 +2,21 @@
 # -*- coding: utf-8 -*-
 
 """
-This module is used to import Cisco Umbrella events into Cisco Command Center
+This script is used to import Cisco Umbrella events into Cisco Command Center
 """
 
 import json
+import os
+import time
 
 import pymongo
 import requests
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
 
-CONFIG_FILE = "./config.json"
-CONFIG_DATA = None
-
-###################
-#    FUNCTIONS    #
-###################
-
-
-def load_config():
-    """Load the Configuration JSON"""
-    global CONFIG_DATA
-
-    print("Loading Config Data...")
-
-    with open(CONFIG_FILE, 'r') as json_config_file:
-        CONFIG_DATA = json.loads(json_config_file.read())
+load_dotenv()
 
 
 def get_events(start_date=None):
@@ -38,12 +26,12 @@ def get_events(start_date=None):
     start_date = int(start_date.replace(tzinfo=timezone.utc).timestamp())
 
     # Build the API URL
-    api_url = "https://reports.api.umbrella.com/v1/organizations/{}/security-activity?limit=500&start={}".format(CONFIG_DATA["umbrella"]["org_id"], start_date)
+    api_url = "https://reports.api.umbrella.com/v1/organizations/{}/security-activity?limit=500&start={}".format(os.getenv("UMBRELLA_API_ORG_ID"), start_date)
 
     print("Fetching {}".format(api_url))
 
     # Get Umbrella Events
-    http_request = requests.get(api_url, auth=HTTPBasicAuth(CONFIG_DATA["umbrella"]["reporting_api_key"], CONFIG_DATA["umbrella"]["reporting_api_secret"]))
+    http_request = requests.get(api_url, auth=HTTPBasicAuth(os.getenv("UMBRELLA_API_REPORTING_KEY"), os.getenv("UMBRELLA_API_REPORTING_SECRET")))
 
     # Check to make sure the GET was successful
     if http_request.status_code == 200:
@@ -56,25 +44,25 @@ def get_events(start_date=None):
 def run():
     """Main function to get new Umbrella events and commit them to the MongoDB database"""
 
-    # Load the config data
-    load_config()
-
     # Connect to the MongoDB instance
-    db_client = pymongo.MongoClient("mongodb://{}/".format(CONFIG_DATA["database"]["address"]),
-                                    username=CONFIG_DATA["database"]["username"],
-                                    password=CONFIG_DATA["database"]["password"])
+    db_client = pymongo.MongoClient("mongodb://{}/".format(os.getenv("MONGO_INITDB_ADDRESS")),
+                                    username=os.getenv("MONGO_INITDB_ROOT_USERNAME"),
+                                    password=os.getenv("MONGO_INITDB_ROOT_PASSWORD"))
 
-    # Use the 'commandcenter' database
-    command_center_db = db_client['commandcenter']
+    # Use the specified database
+    command_center_db = db_client[os.getenv("MONGO_INITDB_DATABASE")]
 
-    # Use the 'events' collection from the 'commandcenter' database
+    # Use the 'events' collection from the specified database
     command_center_events = command_center_db['events']
 
-    # Get the latest 'AMP for Endpoints' event
-    latest_event = command_center_events.find({"product": "Umbrella"}).sort("timestamp", -1)
+    # Get the count of Umbrella documents
+    event_count = command_center_events.count_documents({"product": "Umbrella"})
 
-    # If there's no latest event, the Event collection is empty, so we create a timestamp to import from.
-    if latest_event.count() > 0:
+    # If there are no events, the Event collection is empty, so we create a timestamp to import from.
+    if event_count:
+
+        # Get the latest 'Umbrella' event
+        latest_event = command_center_events.find({"product": "Umbrella"}).sort("timestamp", -1)
         latest_event = latest_event[0]
     else:
         print("No events in database.  Setting latest_event timestamp to 24 hours ago. (The maximum for Umbrella)")
@@ -111,11 +99,19 @@ def run():
 
             print(x.inserted_id)
 
-###################
-# !!! DO WORK !!! #
-###################
 
 if __name__ == "__main__":
 
-    # Run the script
-    run()
+    # Cast the interval as an int
+    sleep_time = int(os.getenv("UMBRELLA_API_LOAD_INTERVAL"))
+
+    # If the AMP API is configured
+    while os.getenv("UMBRELLA_API_REPORTING_KEY"):
+
+        # Run the script
+        run()
+
+        # Wait a specified amount of time
+        time.sleep(sleep_time)
+
+    print("Umbrella API not enabled. Exiting.")
