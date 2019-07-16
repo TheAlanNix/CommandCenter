@@ -12,7 +12,7 @@ import time
 import pymongo
 import requests
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
 
