@@ -5,4 +5,4 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "syslog_event_importer.py"]
+CMD ["python", "-u", "syslog_event_importer.py"]
