@@ -187,9 +187,6 @@ def run():
     # Use the 'events' collection from the 'commandcenter' database
     command_center_events = command_center_db['events']
 
-    # Delete SW Events with ID '0'
-    clear_events(command_center_events)
-
     # Get the latest 'Stealthwatch' event
     latest_event = command_center_events.find({"product": "Stealthwatch", "id": {"$ne": 0}}).sort("timestamp", -1)
 
@@ -211,6 +208,11 @@ def run():
 
     # Get the latest Stealthwatch events
     stealthwatch_events = get_events(latest_event['timestamp'])
+
+    # Delete SW Events with ID '0'
+    clear_events(command_center_events)
+
+    print("Total Events Returned: ", len(stealthwatch_events['data']['results']))
 
     # Iterate through all fetched events
     for event in stealthwatch_events['data']['results']:
