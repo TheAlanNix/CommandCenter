@@ -10,7 +10,6 @@ at a regular interval.
 """
 
 
-import atexit
 import json
 import os
 import pprint
@@ -28,7 +27,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from modules import pxgrid_controller
-from modules import stealthwatch_event_importer
 from requests.auth import HTTPBasicAuth
 
 # Configuration
@@ -394,13 +392,6 @@ def get_ise_session_data(ip_address):
     else:
         return '', 204
 
-
-def load_events():
-    """A function to trigger all event imports into the database"""
-
-    stealthwatch_event_importer.run()
-
-
 # If in production, load the Vue.js routes
 if PRODUCTION:
 
@@ -410,22 +401,6 @@ if PRODUCTION:
         return render_template("index.html")
 
 if __name__ == '__main__':
-
-    # When Flask is in debug mode, it loads twice.
-    # To prevent the scheduler from loading twice, we check to see
-    # if we're in debug mode, if we are, then we wait for the second load.
-    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-
-        # Load events right out of the gate
-        load_events()
-
-        # Run an event load and schedule future runs
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(func=load_events, trigger="interval", seconds=60)
-        scheduler.start()
-
-        # Shut down the scheduler when exiting the app
-        atexit.register(lambda: scheduler.shutdown())
 
     # Load the config data
     load_config()
