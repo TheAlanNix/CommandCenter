@@ -6,6 +6,7 @@ This module is used to import Cisco Stealthwatch events into Cisco Command Cente
 """
 
 import json
+import os
 import time
 
 import pymongo
