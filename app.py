@@ -23,7 +23,6 @@ import pymongo
 import requests
 import xmltodict
 
-from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from modules import pxgrid_controller
