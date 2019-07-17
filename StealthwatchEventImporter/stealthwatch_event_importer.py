@@ -224,7 +224,7 @@ def run():
             # Print a logging message
             if existing_event:
                 event_exists = True
-                print(f"Found that the event already exists: {event["id"]}")
+                print("Found that the event already exists: {}".format(event["id"]))
 
         current_event_time = datetime.strptime(event["lastActiveTime"], "%Y-%m-%dT%H:%M:%S.%f+0000")
         latest_event_time = latest_event["timestamp"]
