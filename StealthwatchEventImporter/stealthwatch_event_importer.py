@@ -164,9 +164,6 @@ def clear_events(event_table):
 def run():
     """Main function to get new Stealthwatch events and commit them to the MongoDB database"""
 
-    # Load the config data
-    load_config()
-
     # Connect to the MongoDB instance
     db_client = pymongo.MongoClient("mongodb://{}/".format(os.getenv("MONGO_INITDB_ADDRESS")),
                                     username=os.getenv("MONGO_INITDB_ROOT_USERNAME"),
