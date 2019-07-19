@@ -82,12 +82,17 @@ def run():
 
         if current_event_time > latest_event_time:
 
+            if event["internalIp"]:
+                src_ip = event["internalIp"]
+            else:
+                src_ip = event["externalIp"]
+
             # Make common fields for the event
             event_common_fields = {
                 "event_name": "Umbrella {} Destination".format(event["actionTaken"]),
                 "event_details": "Umbrella {} the following destination: {}".format(event["actionTaken"], event["destination"]),
                 "product": "Umbrella",
-                "src_ip": event['internalIp'],
+                "src_ip": src_ip,
                 "timestamp": current_event_time
             }
 
