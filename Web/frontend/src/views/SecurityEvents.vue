@@ -4,14 +4,17 @@
       <div id="time-selection">
         <b-form inline>
           <label class="mr-sm-2" for="inlineFormCustomSelectPref">Timeframe: </label>
-            <b-form-select v-model="timeframe_selected"
-                           :options="timeframe_options"
+            <b-form-select v-model="timeframeSelected"
+                           :options="timeframeOptions"
                            size="sm"
                            @change="onTimeframeChange">
             </b-form-select>
           </b-form>
         </div>
-        <div id="page-title">{{ page_title }} <i v-show="eventsLoading" id="loading" class="fa fa-refresh fa-spin fa-1x"></i></div>
+        <div id="page-title">{{ pageTitle }} <i v-show="eventsLoading" 
+                                                id="loading"
+                                                class="fa fa-refresh fa-spin fa-1x"></i>
+        </div>
         <div id="status-container" v-if="errors.length > 0">
           <div class="alert alert-danger text-left">
             <ul>
@@ -20,10 +23,10 @@
           </div>
         </div>
         <!--<div id="filters-container" v-if="filterEventName || filterProduct">
-            Filters: 
-              <b-badge v-if="filterProduct">{{ filterProduct }}</b-badge>
-              <b-badge v-if="filterEventName">{{ filterEventName }}</b-badge>
-              <b-badge href="#" v-on:click="clearFilters" variant="danger">Clear</b-badge>
+          Filters:
+            <b-badge v-if="filterProduct">{{ filterProduct }}</b-badge>
+            <b-badge v-if="filterEventName">{{ filterEventName }}</b-badge>
+            <b-badge href="#" v-on:click="clearFilters" variant="danger">Clear</b-badge>
         </div>-->
         <div class="container-fluid">
             <div class="row">
@@ -88,15 +91,15 @@ export default {
       filterEventName: null,
       filterProduct: null,
       interval: null,
-      page_title: 'Security Events',
-      timeframe_options: [
+      pageTitle: 'Security Events',
+      timeframeOptions: [
         { value: '1', text: 'Past Hour' },
         { value: '6', text: 'Past 6 Hours' },
         { value: '24', text: 'Past 24 Hours' },
         { value: '168', text: 'Past Week' },
         { value: '744', text: 'Past Month' },
       ],
-      timeframe_selected: '6',
+      timeframeSelected: '6',
       selectedEvent: null,
     };
   },
@@ -122,7 +125,7 @@ export default {
         this.eventsBySource = this.summarizePieChartData(val, 'src_ip', 25);
       }
     },
-    events: function (val) {
+    events: function () {
       this.filterEvents();
     },
   },
@@ -133,26 +136,19 @@ export default {
       this.getEvents();
     },
     filterEvents() {
-
       if (this.filterProduct || this.filterEventName) {
         let returnEvents = [];
 
-        this.events.forEach(event => {
-
+        this.events.forEach((event) => {
+          // Initialize a boolean to use
           let filterMet = true;
 
-          if (this.filterProduct && event['product'] != this.filterProduct)
-            filterMet = false;
-
-          if (this.filterEventName && event['event_name'] != this.filterEventName)
-            filterMet = false;
-
-          if (filterMet)
-            returnEvents.push(event);
+          if (this.filterProduct && event.product !== this.filterProduct) filterMet = false;
+          if (this.filterEventName && event.event_name !== this.filterEventName) filterMet = false;
+          if (filterMet) returnEvents.push(event);
         });
 
         this.displayedEvents = returnEvents;
-
       } else {
         this.displayedEvents = this.events;
       }
@@ -160,12 +156,10 @@ export default {
     getEvents() {
       clearInterval(this.interval);
       this.eventsLoading = true;
-      var path = `http://${location.hostname}:5000/api/events?timeframe=${this.timeframe_selected}`;
+      let path = `http://${window.location.hostname}:5000/api/events?timeframe=${this.timeframeSelected}`;
       console.log(path);
-      if (this.filter_product)
-        path = path + `&product=${encodeURIComponent(this.filter_product)}`;
-      if (this.filter_event_name)
-        path = path + `&event_name=${encodeURIComponent(this.filter_event_name)}`;
+      if (this.filter_product) path = `${path}&product=${encodeURIComponent(this.filter_product)}`;
+      if (this.filter_event_name) path = `${path}&event_name=${encodeURIComponent(this.filter_event_name)}`;
       axios.get(path)
         .then((res) => {
           console.log(res.data);
@@ -195,7 +189,7 @@ export default {
     },
     onEventNameUnselected(value) {
       console.log(value);
-      if (value == this.filterEventName) {
+      if (value === this.filterEventName) {
         this.filterEventName = null;
       }
       this.filterEvents();
@@ -208,7 +202,7 @@ export default {
     },
     onProductUnselected(value) {
       console.log(value);
-      if (value == this.filterProduct) {
+      if (value === this.filterProduct) {
         this.filterProduct = null;
       }
       this.filterEvents();
@@ -220,12 +214,14 @@ export default {
       console.log(value);
     },
     onTimeframeChange(value) {
-      this.timeframe_selected = value;
+      this.timeframeSelected = value;
+      this.filterEventName = null;
+      this.filterProduct = null;
       this.getEvents();
     },
     inArrayWithAttribute(array, attr, value) {
-      for (var i = 0; i < array.length; i ++) {
-        if(array[i][attr] === value) {
+      for (let i = 0; i < array.length; i += 1) {
+        if (array[i][attr] === value) {
           return i;
         }
       }
@@ -244,21 +240,20 @@ export default {
       let eventCounts = [];
 
       // Iterate through all events
-      events.forEach(event => {
-
+      events.forEach((event) => {
         // Get the index of the event property
-        var eventIndex = this.inArrayWithAttribute(eventCounts, 'name', event[property]);
+        const eventIndex = this.inArrayWithAttribute(eventCounts, 'name', event[property]);
 
         // Look to see if the Event Name exists
         if (eventIndex === -1) {
           // Store the event name
           eventCounts.push({
             name: event[property],
-            y: 1
+            y: 1,
           });
         } else {
           // Iterate the count
-          eventCounts[eventIndex].y++;
+          eventCounts[eventIndex].y += 1;
         }
       });
 

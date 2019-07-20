@@ -228,9 +228,9 @@ def _get_stealthwatch_flows_xml(duration, host_ip):
 def get_ise_actions():
     """A function to get the ANC profiles from ISE"""
 
-    api_url = "https://{}:{}@{}:9060/ers/config/ancpolicy".format(CONFIG_DATA["ise"]["username"],
-                                                                  CONFIG_DATA["ise"]["password"],
-                                                                  CONFIG_DATA["ise"]["address"])
+    api_url = "https://{}:{}@{}:9060/ers/config/ancpolicy".format(os.getenv("ISE_API_USERNAME"),
+                                                                  os.getenv("ISE_API_PASSWORD"),
+                                                                  os.getenv("ISE_API_ADDRESS"))
 
     print("Fetching {}".format(api_url))
 
@@ -251,10 +251,10 @@ def get_ise_actions():
 def get_ise_anc_assignment(mac_address):
     """A function to look up the ISE ANC assignment for a given MAC address"""
 
-    pxgrid = pxgrid_controller.PxgridControl(CONFIG_DATA["ise"]["address"],
-                                             CONFIG_DATA["ise"]["pxgrid_name"],
-                                             CONFIG_DATA["ise"]["pxgrid_cert"],
-                                             CONFIG_DATA["ise"]["pxgrid_key"])
+    pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
+                                             os.getenv("ISE_PXGRID_CLIENT_NAME"),
+                                             "/app/pxGrid_cert.pem",
+                                             "/app/pxGrid_key.pem")
 
     # Check to see if the account is enabled
     if pxgrid.account_activate()['accountState'] != 'ENABLED':
@@ -283,10 +283,10 @@ def get_ise_anc_assignment(mac_address):
 def set_ise_anc_assignment():
     """A function to set the ISE ANC assignment for a given MAC address"""
 
-    pxgrid = pxgrid_controller.PxgridControl(CONFIG_DATA["ise"]["address"],
-                                             CONFIG_DATA["ise"]["pxgrid_name"],
-                                             CONFIG_DATA["ise"]["pxgrid_cert"],
-                                             CONFIG_DATA["ise"]["pxgrid_key"])
+    pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
+                                             os.getenv("ISE_PXGRID_CLIENT_NAME"),
+                                             "/app/pxGrid_cert.pem",
+                                             "/app/pxGrid_key.pem")
 
     # Check to see if the account is enabled
     if pxgrid.account_activate()['accountState'] != 'ENABLED':
@@ -323,10 +323,10 @@ def set_ise_anc_assignment():
 def clear_ise_anc_assignment(mac_address):
     """A function to clear the ISE ANC assignment for a given MAC address"""
 
-    pxgrid = pxgrid_controller.PxgridControl(CONFIG_DATA["ise"]["address"],
-                                             CONFIG_DATA["ise"]["pxgrid_name"],
-                                             CONFIG_DATA["ise"]["pxgrid_cert"],
-                                             CONFIG_DATA["ise"]["pxgrid_key"])
+    pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
+                                             os.getenv("ISE_PXGRID_CLIENT_NAME"),
+                                             "/app/pxGrid_cert.pem",
+                                             "/app/pxGrid_key.pem")
 
     # Check to see if the account is enabled
     if pxgrid.account_activate()['accountState'] != 'ENABLED':
@@ -355,10 +355,10 @@ def clear_ise_anc_assignment(mac_address):
 def get_ise_session_data(ip_address):
     """A function to look up the ISE session data for a given IP"""
 
-    pxgrid = pxgrid_controller.PxgridControl(CONFIG_DATA["ise"]["address"],
-                                             CONFIG_DATA["ise"]["pxgrid_name"],
-                                             CONFIG_DATA["ise"]["pxgrid_cert"],
-                                             CONFIG_DATA["ise"]["pxgrid_key"])
+    pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
+                                             os.getenv("ISE_PXGRID_CLIENT_NAME"),
+                                             "/app/pxGrid_cert.pem",
+                                             "/app/pxGrid_key.pem")
 
     # Check to see if the account is enabled
     if pxgrid.account_activate()['accountState'] != 'ENABLED':

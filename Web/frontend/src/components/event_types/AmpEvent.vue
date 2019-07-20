@@ -70,22 +70,22 @@
                 </span>
             </b-col>
         </b-row>
-        <b-row>
+        <b-row v-if="event.file != null">
             <b-col>
                 <span class="heading">Disposition</span>
             </b-col>
         </b-row>
-        <b-row>
+        <b-row v-if="event.file != null">
             <b-col>
                 <span class="content">{{ event.file.disposition }}</span>
             </b-col>
         </b-row>
-        <b-row>
+        <b-row v-if="event.file != null">
             <b-col>
                 <span class="heading">File</span>
             </b-col>
         </b-row>
-        <b-row>
+        <b-row v-if="event.file != null">
             <b-col>
                 <span class="content">Disposition: {{ event.file.disposition }}</span>
                 <span class="content">File Name: {{ event.file.file_name }}</span>
@@ -93,12 +93,12 @@
                 <span class="content">Hash (SHA-256): {{ event.file.identity.sha256 }}</span>
             </b-col>
         </b-row>
-        <b-row v-if="event.file.parent != null">
+        <b-row v-if="event.file != null && event.file.parent != null">
             <b-col>
                 <span class="heading">Parent Process</span>
             </b-col>
         </b-row>
-        <b-row  v-if="event.file.parent != null">
+        <b-row  v-if="event.file != null && event.file.parent != null">
             <b-col>
                 <span class="content">Disposition: {{ event.file.parent.disposition }}</span>
                 <span class="content">File Name: {{ event.file.parent.file_name }}</span>
