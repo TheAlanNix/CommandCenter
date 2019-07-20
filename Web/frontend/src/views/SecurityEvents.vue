@@ -1,71 +1,58 @@
 <template>
   <div id="page-container">
     <MenuBar :events="events"></MenuBar>
-      <div id="time-selection">
-        <b-form inline>
-          <label class="mr-sm-2" for="inlineFormCustomSelectPref">Timeframe: </label>
-            <b-form-select v-model="timeframeSelected"
-                           :options="timeframeOptions"
-                           size="sm"
-                           @change="onTimeframeChange">
-            </b-form-select>
-          </b-form>
+    <div id="time-selection">
+      <b-form inline>
+        <label class="mr-sm-2" for="inlineFormCustomSelectPref">Timeframe: </label>
+          <b-form-select v-model="timeframeSelected"
+                          :options="timeframeOptions"
+                          size="sm"
+                          @change="onTimeframeChange">
+          </b-form-select>
+        </b-form>
+      </div>
+      <div id="page-title">{{ pageTitle }} <i v-show="eventsLoading" 
+                                              id="loading"
+                                              class="fa fa-refresh fa-spin fa-1x"></i>
+      </div>
+      <div id="status-container" v-if="errors.length > 0">
+        <div class="alert alert-danger text-left">
+          <ul>
+            <li>{{ errors[0].message }}</li>
+          </ul>
         </div>
-        <div id="page-title">{{ pageTitle }} <i v-show="eventsLoading" 
-                                                id="loading"
-                                                class="fa fa-refresh fa-spin fa-1x"></i>
-        </div>
-        <div id="status-container" v-if="errors.length > 0">
-          <div class="alert alert-danger text-left">
-            <ul>
-              <li>{{ errors[0].message }}</li>
-            </ul>
+      </div>
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12 col-md-4">
+            <PieChart title="Events by Product"
+                      :chart_data="eventsByProduct"
+                      @selected="onProductSelected"
+                      @unselected="onProductUnselected"></PieChart>
+          </div>
+          <div class="col-12 col-md-4">
+            <PieChart title="Events by Name"
+                      :chart_data="eventsByName"
+                      @selected="onEventNameSelected"
+                      @unselected="onEventNameUnselected"></PieChart>
+          </div>
+          <div class="col-12 col-md-4">
+            <PieChart title="Events by Source IP (Top 25)"
+                      :chart_data="eventsBySource"
+                      @selected="onSourceSelected"
+                      @unselected="onSourceUnselected"></PieChart>
           </div>
         </div>
-        <!--<div id="filters-container" v-if="filterEventName || filterProduct">
-          Filters:
-            <b-badge v-if="filterProduct">{{ filterProduct }}</b-badge>
-            <b-badge v-if="filterEventName">{{ filterEventName }}</b-badge>
-            <b-badge href="#" v-on:click="clearFilters" variant="danger">Clear</b-badge>
-        </div>-->
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12 col-md-4">
-                    <PieChart title="Events by Product"
-                                :chart_data="eventsByProduct"
-                                @selected="onProductSelected"
-                                @unselected="onProductUnselected"></PieChart>
-                </div>
-                <div class="col-12 col-md-4">
-                    <PieChart title="Events by Name"
-                                :chart_data="eventsByName"
-                                @selected="onEventNameSelected"
-                                @unselected="onEventNameUnselected"></PieChart>
-                </div>
-                <div class="col-12 col-md-4">
-                    <PieChart title="Events by Source IP (Top 25)"
-                                :chart_data="eventsBySource"
-                                @selected="onSourceSelected"
-                                @unselected="onSourceUnselected"></PieChart>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 col-md-6">
-                    <EventTable :events="displayedEvents" @rowSelected="onEventUpdate"></EventTable>
-                </div>
-                <div class="col-12 col-md-6">
-                    <EventDetails v-if="selectedEvent"
-                                  :selected_event="selectedEvent"></EventDetails>
-                </div>
-            </div>
+        <div class="row">
+          <div class="col-12 col-md-6">
+            <EventTable :events="displayedEvents" @rowSelected="onEventUpdate"></EventTable>
+          </div>
+          <div class="col-12 col-md-6">
+            <EventDetails v-if="selectedEvent"
+                          :selected_event="selectedEvent"></EventDetails>
+          </div>
         </div>
-        <!--<div id="command-viewport" class="container-fluid">
-            <div class="row">
-                <HostView v-for="(event, index) in events"
-                            :key="index"
-                            :host_ip="event.src_ip"></HostView>
-            </div>
-        </div>-->
+      </div>
     </div>
 </template>
 
@@ -74,7 +61,6 @@ import axios from 'axios';
 import PieChart from '../components/charts/PieChart.vue';
 import EventDetails from '../components/EventDetails.vue';
 import EventTable from '../components/EventTable.vue';
-// import HostView from './Host.vue';
 import MenuBar from '../components/MenuBar.vue';
 
 export default {
@@ -281,20 +267,20 @@ export default {
 @import "@/assets/_variables.scss";
 
 html, body {
-    background-color: #fff;
-    color: #636b6f;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 200;
-    height: 100vh;
-    margin: 0;
+  background-color: #fff;
+  color: #636b6f;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 200;
+  height: 100vh;
+  margin: 0;
 }
 
 #page-container {
-    background-color: #f7f7f9;
-    min-height: 100vh;
-    padding-bottom: 15px;
-    position: relative;
-    width: 100%;
+  background-color: #f7f7f9;
+  min-height: 100vh;
+  padding-bottom: 15px;
+  position: relative;
+  width: 100%;
 }
 
 #time-selection {
@@ -303,8 +289,8 @@ html, body {
 }
 
 #page-title {
-    font-size: 24px;
-    margin: 20px 30px;
+  font-size: 24px;
+  margin: 20px 30px;
 }
 
 #filters-container {
@@ -312,16 +298,16 @@ html, body {
 }
 
 #status-container {
-    margin: 20px 0px;
-    text-align: center;
+  margin: 20px 0px;
+  text-align: center;
 
-    .alert {
-        max-width: 40%;
-        margin: auto;
+  .alert {
+    max-width: 40%;
+    margin: auto;
 
-        ul {
-            margin-bottom: 0;
-        }
+    ul {
+      margin-bottom: 0;
     }
+  }
 }
 </style>

@@ -174,8 +174,4 @@ export default {
     float: right;
     padding: 5px;
 }
-
-#network-view {
-    //min-height: 500px;
-}
 </style>
