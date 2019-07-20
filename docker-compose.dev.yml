@@ -1,0 +1,14 @@
+version: '3'
+services:
+  web_frontend_dev:
+    container_name: ccc_web_frontend_dev
+    command: bash -c "npm install && npm run serve"
+    depends_on:
+      - mongodb
+    env_file: .env
+    image: node
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Web/frontend:/app
+    working_dir: /app

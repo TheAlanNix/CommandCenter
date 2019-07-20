@@ -37,3 +37,12 @@ services:
       - mongodb
     env_file: .env
     restart: on-failure
+  web:
+    build: "./Web"
+    container_name: ccc_web
+    depends_on:
+      - mongodb
+    env_file: .env
+    ports:
+      - "5000:5000"
+    restart: on-failure
