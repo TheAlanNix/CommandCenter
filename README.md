@@ -2,42 +2,28 @@
 
 Cisco Command Center is a project to collect and correlate event data across multiple Cisco Security (and possibly third-party) products, and display that data in an easy to understand interface.  The end goal is to allow Security Analysts to easily identify attacks and the offending hosts, and perform remediations against those attacks - all from a single web application.
 
+## Requirements
+
+* Must have Docker installed
+
 ## Installation
 
 Cisco Command Center uses a Python Flask backend web server, a MongoDB database, and a Vue javascript framework front-end.
 
-First, make a copy of *config.example.json* file as *config.json*.  From the project root directory:
+First, make a copy of *.example.env* file as *.env*.  From the project root directory:
 
->```cp config.example.json config.json```
+>```cp .example.env .env```
 
-You'll then need to enter your database and product API credentials into the *config.json* file.  Currently, Command Center requires all API keys to be entered - this will be addressed shortly.
+You'll then need to enter the MongoDB database credentials you'd like to use, and product API credentials, into the *.env* file.
 
-You can leverage an existing MongoDB database, or if you're doing local development, you can use MongoDB within a container.  To spool up a container, you can run the following:
+By default, Command Center will deploy a MongoDB container, but if you'd like to use an external MongoDB, you certainly can.
 
->### Download & Deploy MongoDB Container
->1. ```docker pull mongo```
->2. ```docker run --name YOURCONTAINERNAME --restart=always -d -p 27017:27017 mongo >ongod --auth```
->3. ```sudo docker exec -i -t YOURCONTAINERNAME bash```
->>### Add MongoDB Authentication
->>1. ```mongo```
->>2. ```use admin```
->>3. ```db.createUser({user:"USERNAME",pwd:"PASSWORD",roles:[{role:"root",db:"admin"}]})```
->>4. ```exit```
->8. ```exit```
+Once the *.env* file configuration is complete, you can simply run the following command from the root project directory to start all of the Docker containers:
 
-Next, we'll pull in the front-end dependencies (via npm), and compile the production code.  From the project root directory:
+>```docker-compose up```
 
->### Install Node Dependencies
->1. ```cd www```
->2. ```npm install```
->3. ```npm run build```
+This will download/compile all of the containers, and start them.  By default, this will run the containers in the foreground.  I recommend doing this at least once to make sure everything starts appropriately.  Once you've verified the *.env* is correct, you can run the following to daemon-ize the containers:
 
-Finally, we'll grab our Python dependencies, and run the web server.  From the project root directory:
-
->### Install Python Dependencies
->1. ```python3 -m venv venv```
->2. ```source venv/bin/activate```
->3. ```pip install -r requirements.txt```
->4. ```python app.py```
+>```docker-compose up -d```
 
 At this point your Command Center instance should be up and running.

@@ -1,0 +1,16 @@
+version: '3'
+services:
+  web_frontend_dev:
+    container_name: ccc_web_frontend_dev
+    command: bash -c "npm install && npm run serve"
+    depends_on:
+      - mongodb
+    env_file: .env
+    image: node
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Web/frontend:/app
+      - ${ISE_PXGRID_CERT_PATH}:/app/pxGrid_cert.pem
+      - ${ISE_PXGRID_KEY_PATH}:/app/pxGrid_key.pem
+    working_dir: /app
