@@ -188,7 +188,7 @@ html, body {
 
 #host-input {
     display: inline;
-    // width: 150px;
+    width: 150px;
 }
 
 #page-title {
