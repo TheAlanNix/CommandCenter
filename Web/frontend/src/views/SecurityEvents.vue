@@ -122,6 +122,9 @@ export default {
       this.getEvents();
     },
     filterEvents() {
+
+      let t0 = performance.now();
+
       if (this.filterProduct || this.filterEventName) {
         let returnEvents = [];
 
@@ -138,6 +141,10 @@ export default {
       } else {
         this.displayedEvents = this.events;
       }
+
+      let t1 = performance.now();
+      console.log("Call to filterEvents took " + (t1 - t0) + " milliseconds.")
+
     },
     getEvents() {
       clearInterval(this.interval);
@@ -225,6 +232,8 @@ export default {
     summarizePieChartData(events, property, count = 0) {
       let eventCounts = [];
 
+      let t0 = performance.now();
+
       // Iterate through all events
       events.forEach((event) => {
         // Get the index of the event property
@@ -250,6 +259,9 @@ export default {
       if (count > 0) {
         eventCounts = eventCounts.slice(0, count);
       }
+
+      let t1 = performance.now();
+      console.log("Call to summarizePieChartData with property " + property + " took " + (t1 - t0) + " milliseconds.")
 
       return eventCounts;
     },
