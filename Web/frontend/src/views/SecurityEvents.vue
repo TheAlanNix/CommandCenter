@@ -24,6 +24,12 @@
       </div>
       <div class="container-fluid">
         <div class="row">
+          <div class="col-12">
+            <TimeSeriesChart title="Events Over Time"
+                             :chart_data="eventsOverTime"></TimeSeriesChart>
+          </div>
+        </div>
+        <div class="row">
           <div class="col-12 col-md-4">
             <PieChart title="Events by Product"
                       :chart_data="eventsByProduct"
@@ -59,6 +65,7 @@
 <script>
 import axios from 'axios';
 import PieChart from '../components/charts/PieChart.vue';
+import TimeSeriesChart from '../components/charts/TimeSeriesChart.vue';
 import EventDetails from '../components/EventDetails.vue';
 import EventTable from '../components/EventTable.vue';
 import MenuBar from '../components/MenuBar.vue';
@@ -70,10 +77,11 @@ export default {
       displayedEvents: [],
       errors: [],
       events: [],
-      eventsLoading: false,
       eventsByName: [],
       eventsByProduct: [],
       eventsBySource: [],
+      eventsLoading: false,
+      eventsOverTime: [],
       filterEventName: null,
       filterProduct: null,
       interval: null,
@@ -91,6 +99,7 @@ export default {
   },
   components: {
     PieChart,
+    TimeSeriesChart,
     EventTable,
     EventDetails,
     MenuBar,
@@ -113,6 +122,12 @@ export default {
     },
     events: function () {
       this.filterEvents();
+    },
+    filterEventName: function () {
+      this.getEventsOverTime();
+    },
+    filterProduct: function () {
+      this.getEventsOverTime();
     },
   },
   methods: {
@@ -151,12 +166,11 @@ export default {
       this.eventsLoading = true;
       let path = `http://${window.location.hostname}:5000/api/events?timeframe=${this.timeframeSelected}`;
       console.log(path);
-      if (this.filter_product) path = `${path}&product=${encodeURIComponent(this.filter_product)}`;
-      if (this.filter_event_name) path = `${path}&event_name=${encodeURIComponent(this.filter_event_name)}`;
       axios.get(path)
         .then((res) => {
           console.log(res.data);
           this.events = res.data.events;
+          this.getEventsOverTime();
           this.eventsLoading = false;
           this.interval = setTimeout(() => {
             this.getEvents();
@@ -172,29 +186,63 @@ export default {
           }, 30000);
         });
     },
+    getEventsOverTime() {
+      let path = `http://${window.location.hostname}:5000/api/events-over-time?timeframe=${this.timeframeSelected}`;
+      console.log(path);
+      if (this.filterProduct) path = `${path}&product=${encodeURIComponent(this.filterProduct)}`;
+      if (this.filterEventName) path = `${path}&event_name=${encodeURIComponent(this.filterEventName)}`;
+      axios.get(path)
+        .then((res) => {
+          console.log(res.data);
+
+          let returnData = {
+            name: "Current Timeframe",
+            data: []
+          }
+
+          // Format the data for how Highcharts wants it
+          res.data.event_counts.forEach((eventCount) => {
+            // Create a date object
+            const date = new Date(eventCount._id.$date);
+            
+            // Push the data onto a return array
+            returnData.data.push([
+              date.getTime(),
+              eventCount.count
+            ]);
+          });
+
+          this.eventsOverTime = returnData;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.errors.unshift({ message: error });
+        });
+    },
     onEventUpdate(event) {
       this.selectedEvent = event;
     },
     onEventNameSelected(value) {
-      console.log(value);
+      console.log(`Event Name ${value} was selected.`);
       this.filterEventName = value;
       this.filterEvents();
     },
     onEventNameUnselected(value) {
-      console.log(value);
+      console.log(`Event Name ${value} was unselected.`);
       if (value === this.filterEventName) {
         this.filterEventName = null;
       }
       this.filterEvents();
     },
     onProductSelected(value) {
-      console.log(value);
+      console.log(`Product ${value} was selected.`);
       this.filterProduct = value;
       this.filterEventName = null;
       this.filterEvents();
     },
     onProductUnselected(value) {
-      console.log(value);
+      console.log(`Product ${value} was unselected.`);
       if (value === this.filterProduct) {
         this.filterProduct = null;
       }

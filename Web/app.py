@@ -55,7 +55,7 @@ def ping_pong():
     return jsonify('pong!')
 
 
-# Alerts Functions
+# Events Functions
 @app.route('/api/events', methods=['GET'])
 def get_events():
     """A function to retrieve events from the database and return them as JSON"""
@@ -109,6 +109,74 @@ def get_events():
 
         # Append the event to the response
         response_object['events'].append(json.loads(dumps(event)))
+
+    return jsonify(response_object)
+
+
+@app.route('/api/events-over-time', methods=['GET'])
+def get_events_over_time():
+    """A function to retrieve event counts from the database aggregated into 15 intervals and return them as JSON"""
+
+    # Connect to the MongoDB instance
+    db_client = pymongo.MongoClient("mongodb://{}/".format(os.getenv("MONGO_INITDB_ADDRESS")),
+                                    username=os.getenv("MONGO_INITDB_ROOT_USERNAME"),
+                                    password=os.getenv("MONGO_INITDB_ROOT_PASSWORD"))
+
+    # Use the 'commandcenter' database
+    command_center_db = db_client['commandcenter']
+
+    # Use the 'events' collection from the 'commandcenter' database
+    command_center_events = command_center_db['events']
+
+    # Set up a basic query filter
+    query_filter = {}
+
+    # If the host IP is specified, then only return those events.
+    if 'host_ip' in request.args:
+        query_filter['src_ip'] = request.args['host_ip']
+
+    # If a timeframe is specified, then use it.
+    if 'timeframe' in request.args:
+        timeframe = int(request.args['timeframe'])
+        query_date = datetime.utcnow().replace(microsecond=0) - timedelta(hours=timeframe)
+        query_filter['timestamp'] = {'$gte': query_date}
+
+    # If a product is specified, then use it.
+    if 'product' in request.args:
+        query_filter['product'] = {'$eq': request.args['product']}
+
+    # If an event name is specified, then use it.
+    if 'event_name' in request.args:
+        query_filter['event_name'] = {'$eq': request.args['event_name']}
+
+    # Get the aggregated events
+    aggregated_events = command_center_events.aggregate([
+        {"$match": query_filter},
+        {"$group":
+            {"_id":
+                {"$toDate":
+                    {"$subtract": [
+                        {"$toLong": "$timestamp"},
+                        {"$mod": [
+                            {"$toLong": "$timestamp"},
+                            1000 * 60 * 5
+                        ]}
+                    ]}},
+                "count": {"$sum": 1}}},
+        {"$sort": {"_id": 1}}
+    ])
+
+    # Set up a response object
+    response_object = {
+        'status': 'success',
+        'event_counts': [],
+    }
+
+    # Iterate through all events
+    for event in aggregated_events:
+
+        # Append the event to the response
+        response_object['event_counts'].append(json.loads(dumps(event)))
 
     return jsonify(response_object)
 

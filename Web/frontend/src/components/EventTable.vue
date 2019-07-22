@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col">
                 <div class="event-panel-header">
-                    Events ({{ events.length }})
+                    Events ({{ latestEvents.length }})
                 </div>
             </div>
         </div>
@@ -13,7 +13,7 @@
                     <b-table small striped hover selectable show-empty
                                 select-mode="single"
                                 selectedVariant="warning"
-                                :items="events"
+                                :items="latestEvents"
                                 :fields="fields"
                                 @row-selected="rowSelected"
                                 ref="eventTable">
@@ -35,10 +35,14 @@ export default {
   data() {
     return {
       fields: ['product', 'event_name', 'event_details', { key: 'formatted_timestamp', label: 'Timestamp' }],
+      latestEvents: [],
       selectedEvent: null,
     };
   },
   methods: {
+    getLatestEvents(events) {
+      this.latestEvents = events.slice(0, 1000);
+    },
     rowSelected(items) {
       if (items.length > 0) {
         this.selectedEvent = items[0];
@@ -58,9 +62,9 @@ export default {
     },
   },
   watch: {
-    // events: function() {
-    //   this.selectFirstEvent();
-    // },
+    events: function() {
+      this.getLatestEvents(this.events);
+    },
   },
 };
 </script>
