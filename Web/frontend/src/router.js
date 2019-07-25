@@ -18,7 +18,7 @@ export default new Router({
       component: Splash,
     },
     {
-      path: '/host/:host_ip',
+      path: '/host/:hostIp',
       name: 'host',
       component: Host,
       props: true,
