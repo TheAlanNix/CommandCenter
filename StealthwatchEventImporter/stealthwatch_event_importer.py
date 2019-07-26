@@ -47,7 +47,7 @@ def login():
 
     if (response.status_code != 200):
         print("An error has ocurred, while logging in, with the following code {}".format(response.status_code))
-        exit()
+        exit(1)
 
 
 def get_event_names():
@@ -81,7 +81,7 @@ def get_event_names():
         return return_dict
     else:
         print("An error has occured while fetching event names.  HTTP Code: {}".format(response.status_code))
-        exit()
+        exit(1)
 
 
 def get_events(start_date=None):
@@ -146,7 +146,7 @@ def get_events(start_date=None):
     # If unable to update the IPs for a given tag (host group)
     else:
         print("An error has ocurred, while getting security events, with the following code {}".format(response.status_code))
-        exit()
+        exit(1)
 
 
 def clear_events(event_table):

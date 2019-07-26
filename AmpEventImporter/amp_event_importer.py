@@ -38,7 +38,7 @@ def get_events(start_date=None):
         return http_request.json()
     else:
         print('AMP Connection Failure - HTTP Return Code: {}\nResponse: {}'.format(http_request.status_code, http_request.text))
-        exit()
+        exit(1)
 
 
 def run():
