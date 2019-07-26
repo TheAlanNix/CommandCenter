@@ -20,4 +20,4 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "-u", "app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "-w", "10", "app:app"]
