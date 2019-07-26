@@ -115,7 +115,7 @@ def get_events():
 
 @app.route('/api/events-over-time', methods=['GET'])
 def get_events_over_time():
-    """A function to retrieve event counts from the database aggregated into 15 intervals and return them as JSON"""
+    """A function to retrieve event counts from the database aggregated into intervals and return them as JSON"""
 
     # Connect to the MongoDB instance
     db_client = pymongo.MongoClient("mongodb://{}/".format(os.getenv("MONGO_INITDB_ADDRESS")),

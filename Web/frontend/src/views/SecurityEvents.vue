@@ -1,111 +1,86 @@
 <template>
   <div id="page-container">
-    <MenuBar :events="events"></MenuBar>
-    <div id="time-selection">
-      <b-form inline>
-        <label class="mr-sm-2" for="inlineFormCustomSelectPref">Timeframe: </label>
-          <b-form-select v-model="timeframeSelected"
-                          :options="timeframeOptions"
-                          size="sm"
-                          @change="onTimeframeChange">
-          </b-form-select>
-        </b-form>
-      </div>
-      <div id="page-title">{{ pageTitle }} <i v-show="eventsLoading" 
-                                              id="loading"
-                                              class="fa fa-refresh fa-spin fa-1x"></i>
-      </div>
-      <div id="status-container" v-if="errors.length > 0">
-        <div class="alert alert-danger text-left">
-          <ul>
-            <li>{{ errors[0].message }}</li>
-          </ul>
+    <Header :pageTitle="pageTitle"/>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <TimeSeriesChart title="Events Over Time"
+                          :chart_data="eventsOverTime"></TimeSeriesChart>
         </div>
       </div>
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-12">
-            <TimeSeriesChart title="Events Over Time"
-                             :chart_data="eventsOverTime"></TimeSeriesChart>
-          </div>
+      <div class="row">
+        <div class="col-12 col-md-4">
+          <PieChart title="Events by Product"
+                    :chart_data="eventsByProduct"
+                    @selected="onProductSelected"
+                    @unselected="onProductUnselected"></PieChart>
         </div>
-        <div class="row">
-          <div class="col-12 col-md-4">
-            <PieChart title="Events by Product"
-                      :chart_data="eventsByProduct"
-                      @selected="onProductSelected"
-                      @unselected="onProductUnselected"></PieChart>
-          </div>
-          <div class="col-12 col-md-4">
-            <PieChart title="Events by Name"
-                      :chart_data="eventsByName"
-                      @selected="onEventNameSelected"
-                      @unselected="onEventNameUnselected"></PieChart>
-          </div>
-          <div class="col-12 col-md-4">
-            <PieChart title="Events by Source IP (Top 25)"
-                      :chart_data="eventsBySource"
-                      @selected="onSourceSelected"
-                      @unselected="onSourceUnselected"></PieChart>
-          </div>
+        <div class="col-12 col-md-4">
+          <PieChart title="Events by Name"
+                    :chart_data="eventsByName"
+                    @selected="onEventNameSelected"
+                    @unselected="onEventNameUnselected"></PieChart>
         </div>
-        <div class="row">
-          <div class="col-12 col-md-6">
-            <EventTable :events="displayedEvents" @rowSelected="onEventUpdate"></EventTable>
-          </div>
-          <div class="col-12 col-md-6">
-            <EventDetails v-if="selectedEvent"
-                          :selected_event="selectedEvent"></EventDetails>
-          </div>
+        <div class="col-12 col-md-4">
+          <PieChart title="Events by Source IP (Top 25)"
+                    :chart_data="eventsBySource"
+                    @selected="onSourceSelected"
+                    @unselected="onSourceUnselected"></PieChart>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 col-md-6">
+          <EventTable :events="filteredEvents" @rowSelected="onEventUpdate"></EventTable>
+        </div>
+        <div class="col-12 col-md-6">
+          <EventDetails v-if="selectedEvent"
+                        :selectedEvent="selectedEvent"></EventDetails>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script>
 import axios from 'axios';
-import PieChart from '../components/charts/PieChart.vue';
-import TimeSeriesChart from '../components/charts/TimeSeriesChart.vue';
 import EventDetails from '../components/EventDetails.vue';
 import EventTable from '../components/EventTable.vue';
-import MenuBar from '../components/MenuBar.vue';
+import Header from '../components/Header.vue';
+import PieChart from '../components/charts/PieChart.vue';
+import TimeSeriesChart from '../components/charts/TimeSeriesChart.vue';
 
 export default {
   name: 'SecurityEventsView',
   data() {
     return {
-      displayedEvents: [],
-      errors: [],
-      events: [],
       eventsByName: [],
       eventsByProduct: [],
       eventsBySource: [],
-      eventsLoading: false,
       eventsOverTime: [],
+      filteredEvents: [],
       filterEventName: null,
       filterProduct: null,
-      interval: null,
       pageTitle: 'Security Events',
-      timeframeOptions: [
-        { value: '1', text: 'Past Hour' },
-        { value: '6', text: 'Past 6 Hours' },
-        { value: '24', text: 'Past 24 Hours' },
-        { value: '168', text: 'Past Week' },
-        { value: '744', text: 'Past Month' },
-      ],
-      timeframeSelected: '6',
       selectedEvent: null,
     };
   },
   components: {
-    PieChart,
-    TimeSeriesChart,
     EventTable,
     EventDetails,
-    MenuBar,
+    Header,
+    PieChart,
+    TimeSeriesChart,
+  },
+  computed: {
+    events() {
+      return this.$store.state.events;
+    },
+    timeframe() {
+      return this.$store.state.timeframe;
+    },
   },
   watch: {
-    displayedEvents: function (val) {
+    filteredEvents: function (val) {
       if (this.filterProduct && !this.filterEventName) {
         this.eventsByName = this.summarizePieChartData(val, 'event_name');
         this.eventsBySource = this.summarizePieChartData(val, 'src_ip', 25);
@@ -121,13 +96,16 @@ export default {
       }
     },
     events: function () {
+      this.getEventsOverTime();
       this.filterEvents();
     },
     filterEventName: function () {
       this.getEventsOverTime();
+      this.filterEvents();
     },
     filterProduct: function () {
       this.getEventsOverTime();
+      this.filterEvents();
     },
   },
   methods: {
@@ -137,11 +115,8 @@ export default {
       this.getEvents();
     },
     filterEvents() {
-
-      let t0 = performance.now();
-
       if (this.filterProduct || this.filterEventName) {
-        let returnEvents = [];
+        const returnEvents = [];
 
         this.events.forEach((event) => {
           // Initialize a boolean to use
@@ -152,42 +127,13 @@ export default {
           if (filterMet) returnEvents.push(event);
         });
 
-        this.displayedEvents = returnEvents;
+        this.filteredEvents = returnEvents;
       } else {
-        this.displayedEvents = this.events;
+        this.filteredEvents = this.events;
       }
-
-      let t1 = performance.now();
-      console.log("Call to filterEvents took " + (t1 - t0) + " milliseconds.")
-
-    },
-    getEvents() {
-      clearInterval(this.interval);
-      this.eventsLoading = true;
-      let path = `http://${window.location.hostname}:5000/api/events?timeframe=${this.timeframeSelected}`;
-      console.log(path);
-      axios.get(path)
-        .then((res) => {
-          console.log(res.data);
-          this.events = res.data.events;
-          this.getEventsOverTime();
-          this.eventsLoading = false;
-          this.interval = setTimeout(() => {
-            this.getEvents();
-          }, 30000);
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.error(error);
-          this.errors.unshift({ message: error });
-          this.eventsLoading = false;
-          this.interval = setTimeout(() => {
-            this.getEvents();
-          }, 30000);
-        });
     },
     getEventsOverTime() {
-      let path = `http://${window.location.hostname}:5000/api/events-over-time?timeframe=${this.timeframeSelected}`;
+      let path = `http://${window.location.hostname}:5000/api/events-over-time?timeframe=${this.timeframe}`;
       console.log(path);
       if (this.filterProduct) path = `${path}&product=${encodeURIComponent(this.filterProduct)}`;
       if (this.filterEventName) path = `${path}&event_name=${encodeURIComponent(this.filterEventName)}`;
@@ -195,20 +141,20 @@ export default {
         .then((res) => {
           console.log(res.data);
 
-          let returnData = {
-            name: "Current Timeframe",
-            data: []
-          }
+          const returnData = {
+            name: 'Current Timeframe',
+            data: [],
+          };
 
           // Format the data for how Highcharts wants it
           res.data.event_counts.forEach((eventCount) => {
             // Create a date object
             const date = new Date(eventCount._id.$date);
-            
+
             // Push the data onto a return array
             returnData.data.push([
               date.getTime(),
-              eventCount.count
+              eventCount.count,
             ]);
           });
 
@@ -217,7 +163,7 @@ export default {
         .catch((error) => {
           // eslint-disable-next-line
           console.error(error);
-          this.errors.unshift({ message: error });
+          this.$store.commit('ADD_ERROR', { message: error });
         });
     },
     onEventUpdate(event) {
@@ -226,39 +172,29 @@ export default {
     onEventNameSelected(value) {
       console.log(`Event Name ${value} was selected.`);
       this.filterEventName = value;
-      this.filterEvents();
     },
     onEventNameUnselected(value) {
       console.log(`Event Name ${value} was unselected.`);
       if (value === this.filterEventName) {
         this.filterEventName = null;
       }
-      this.filterEvents();
     },
     onProductSelected(value) {
       console.log(`Product ${value} was selected.`);
       this.filterProduct = value;
       this.filterEventName = null;
-      this.filterEvents();
     },
     onProductUnselected(value) {
       console.log(`Product ${value} was unselected.`);
       if (value === this.filterProduct) {
         this.filterProduct = null;
       }
-      this.filterEvents();
     },
     onSourceSelected(value) {
       this.$router.push(`/host/${value}`);
     },
     onSourceUnselected(value) {
       console.log(value);
-    },
-    onTimeframeChange(value) {
-      this.timeframeSelected = value;
-      this.filterEventName = null;
-      this.filterProduct = null;
-      this.getEvents();
     },
     inArrayWithAttribute(array, attr, value) {
       for (let i = 0; i < array.length; i += 1) {
@@ -279,8 +215,6 @@ export default {
     },
     summarizePieChartData(events, property, count = 0) {
       let eventCounts = [];
-
-      let t0 = performance.now();
 
       // Iterate through all events
       events.forEach((event) => {
@@ -308,66 +242,14 @@ export default {
         eventCounts = eventCounts.slice(0, count);
       }
 
-      let t1 = performance.now();
-      console.log("Call to summarizePieChartData with property " + property + " took " + (t1 - t0) + " milliseconds.")
-
       return eventCounts;
     },
-  },
-  beforeDestroy() {
-    clearInterval(this.interval);
-  },
-  created() {
-    this.getEvents();
   },
 };
 </script>
 
 <style lang="scss">
-@import "@/assets/_variables.scss";
-
-html, body {
-  background-color: #fff;
-  color: #636b6f;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 200;
-  height: 100vh;
-  margin: 0;
-}
-
-#page-container {
-  background-color: #f7f7f9;
-  min-height: 100vh;
-  padding-bottom: 15px;
-  position: relative;
-  width: 100%;
-}
-
-#time-selection {
-  float: right;
-  margin: 20px 30px;
-}
-
-#page-title {
-  font-size: 24px;
-  margin: 20px 30px;
-}
-
 #filters-container {
   margin: 5px 40px;
-}
-
-#status-container {
-  margin: 20px 0px;
-  text-align: center;
-
-  .alert {
-    max-width: 40%;
-    margin: auto;
-
-    ul {
-      margin-bottom: 0;
-    }
-  }
 }
 </style>

@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col">
                 <div class="host-panel-header">
-                    <i v-show="flows_loading" id="loading" class="fa fa-refresh fa-spin fa-1x"></i>
+                    <i v-show="flowsLoading" id="loading" class="fa fa-refresh fa-spin fa-1x"></i>
                     Flow Graph
                 </div>
             </div>
@@ -32,7 +32,7 @@ export default {
   components: {
     VisNetwork: Network,
   },
-  props: ['flows', 'flows_loading', 'host_ip', 'host_snapshot'],
+  props: ['flows', 'flowsLoading', 'hostIp', 'hostSnapshot'],
   data() {
     return {
       edges: [],
@@ -74,14 +74,14 @@ export default {
 
       this.flows.forEach(flow => {
 
-        var server_node_id = this.processNode(flow.server);
-        var client_node_id = this.processNode(flow.client);
+        var serverNodeId = this.processNode(flow.server);
+        var clientNodeId = this.processNode(flow.client);
 
-        if (!edges.includes(client_node_id+server_node_id)) {
-          edges.push(client_node_id+server_node_id);
+        if (!edges.includes(clientNodeId+serverNodeId)) {
+          edges.push(clientNodeId+serverNodeId);
           this.edges.push({
-            from: client_node_id,
-            to: server_node_id,
+            from: clientNodeId,
+            to: serverNodeId,
             arrows: "to",
           });
         }
@@ -92,70 +92,70 @@ export default {
     processNode(node) {
 
       // Get the node ID / IP
-      var host_id = node['@ip-address'];
-      var host_ip = node['@ip-address'];
+      var hostId = node['@ip-address'];
+      var hostIp = node['@ip-address'];
 
       // Get the host Country
-      var host_country = node['@country'];
+      var hostCountry = node['@country'];
 
       // Get the byte count
-      var host_value = node['@bytes'];
+      var hostValue = node['@bytes'];
 
       // Placeholders
-      var host_group;
-      var host_label;
+      var hostGroup;
+      var hostLabel;
 
       // Check to see if it's an inside host, then group by country
-      if (["XR", "XU", "XL"].includes(host_country)) {
-        host_label = host_ip;
-        if (host_ip == this.host_ip)
-            host_group = 0;
+      if (["XR", "XU", "XL"].includes(hostCountry)) {
+        hostLabel = hostIp;
+        if (hostIp == this.hostIp)
+            hostGroup = 0;
         else
-            host_group = 1;
+            hostGroup = 1;
       } else {
-        host_id = host_country;
-        host_label = host_country;
-        host_group = 2;
+        hostId = hostCountry;
+        hostLabel = hostCountry;
+        hostGroup = 2;
       }
 
-      var node_exists = false;
+      var nodeExists = false;
 
       this.nodes.forEach(node => {
-        if (node.id == host_id) {
-          node_exists = true;
+        if (node.id == hostId) {
+          nodeExists = true;
           node = {
-            id: host_id,
-            label: host_label,
-            group: host_group,
-            value: node.value + host_value,
+            id: hostId,
+            label: hostLabel,
+            group: hostGroup,
+            value: node.value + hostValue,
           }
         }
       });
 
-      if (!node_exists) {
+      if (!nodeExists) {
         this.nodes.push({
-            id: host_id,
-            label: host_label,
-            group: host_group,
-            value: host_value,
+            id: hostId,
+            label: hostLabel,
+            group: hostGroup,
+            value: hostValue,
         })
       }
 
-      return host_id
+      return hostId
 
     },
     processEdge(edge) {
 
       // Get the edge IDs
-      var client_id = edge.client['@ip-address'];
-      var server_id = edge.server['@ip-address'];
+      var clientId = edge.client['@ip-address'];
+      var serverId = edge.server['@ip-address'];
 
       // Get the service
       var service = edge['@service'];
 
     },
     onGraphStabilized(event) {
-      this.$refs.network.fit({animation: true});
+      this.$refs.network.fit({ animation: true });
     },
   },
   watch: {

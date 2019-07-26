@@ -9,32 +9,32 @@
         </div>
         <div class="row">
             <div class="col">
-                <div v-if="selected_event.length == 0">
+                <div v-if="selectedEvent.length == 0">
                     <div class="text-center my-2">
                         No Event Selected
                     </div>
                 </div>
-                <AmpEvent v-if="selected_event.product == 'AMP for Endpoints'"
-                                        :event="selected_event"></AmpEvent>
-                <FirepowerEvent v-if="selected_event.product == 'Firepower'"
-                                        :event="selected_event"></FirepowerEvent>
-                <StealthwatchEvent v-if="selected_event.product == 'Stealthwatch'"
-                                        :event="selected_event"></StealthwatchEvent>
-                <UmbrellaEvent v-if="selected_event.product == 'Umbrella'"
-                                        :event="selected_event"></UmbrellaEvent>
+                <AmpEvent v-if="selectedEvent.product == 'AMP for Endpoints'"
+                          :event="selectedEvent"></AmpEvent>
+                <FirepowerEvent v-if="selectedEvent.product == 'Firepower'"
+                                :event="selectedEvent"></FirepowerEvent>
+                <StealthwatchEvent v-if="selectedEvent.product == 'Stealthwatch'"
+                                   :event="selectedEvent"></StealthwatchEvent>
+                <UmbrellaEvent v-if="selectedEvent.product == 'Umbrella'"
+                               :event="selectedEvent"></UmbrellaEvent>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import AmpEvent from './event_types/AmpEvent';
-import FirepowerEvent from './event_types/FirepowerEvent';
-import StealthwatchEvent from './event_types/StealthwatchEvent';
-import UmbrellaEvent from './event_types/UmbrellaEvent';
+import AmpEvent from './event_types/AmpEvent.vue';
+import FirepowerEvent from './event_types/FirepowerEvent.vue';
+import StealthwatchEvent from './event_types/StealthwatchEvent.vue';
+import UmbrellaEvent from './event_types/UmbrellaEvent.vue';
 
 export default {
-  props: ['selected_event'],
+  props: ['selectedEvent'],
   components: {
     AmpEvent,
     FirepowerEvent,
