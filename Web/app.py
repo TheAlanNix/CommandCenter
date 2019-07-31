@@ -24,6 +24,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from flask_compress import Compress
 from flask_cors import CORS
+from modules import amp_client
 from modules import pxgrid_controller
 from requests.auth import HTTPBasicAuth
 
@@ -179,6 +180,21 @@ def get_events_over_time():
         response_object['event_counts'].append(json.loads(dumps(event)))
 
     return jsonify(response_object)
+
+
+# AMP Function
+@app.route('/api/amp/computer/<ip_address>', methods=['GET'])
+def get_amp_computer(ip_address):
+
+    # Create an AMP API Client
+    client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
+                                  api_key=os.getenv("AMP_API_KEY"))
+
+    # Get the computers that have been at the internal IP
+    response = client.get_computers(internal_ip=ip_address)
+
+    # Return a JSON formatted list of the computers
+    return jsonify(response)
 
 
 # Stealthwatch Functions

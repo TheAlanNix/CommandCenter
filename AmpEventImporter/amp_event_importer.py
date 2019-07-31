@@ -26,7 +26,7 @@ def get_events(start_date=None):
     start_date = start_date.isoformat()
 
     # Build the API URL
-    api_url = "https://{}//v1/events?start_date={}&event_type[]=1090519054&event_type[]=553648147&event_type[]=553648168&event_type[]=1090519084".format(os.getenv("AMP_API_FQDN"), start_date)
+    api_url = "https://{}/v1/events?start_date={}&event_type[]=1090519054&event_type[]=553648147&event_type[]=553648168&event_type[]=1090519084".format(os.getenv("AMP_API_FQDN"), start_date)
 
     print("Fetching {}".format(api_url))
 

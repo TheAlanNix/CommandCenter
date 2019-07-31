@@ -22,6 +22,10 @@ export default new Vuex.Store({
     SET_EVENTS(state, events) {
       state.events = events;
     },
+    CLEAR_TIMEOUT(state) {
+      clearTimeout(state.timeout);
+      state.timeout = null;
+    },
     SET_TIMEOUT(state, timeout) {
       state.timeout = timeout;
     },
@@ -33,9 +37,13 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    fetchEvents(context) {
+    clearTimeout(context) {
       // Clear any existing timeout
-      clearTimeout(this.state.timeout);
+      context.commit('CLEAR_TIMEOUT');
+    },
+    getEvents(context) {
+      // Clear any existing timeout
+      context.commit('CLEAR_TIMEOUT');
 
       // Indicate that we're loading
       context.commit('SET_LOADING_STATUS', true);
@@ -49,7 +57,7 @@ export default new Vuex.Store({
           context.commit('SET_EVENTS', res.data.events);
           context.commit('SET_LOADING_STATUS', false);
           context.commit('SET_TIMEOUT', setTimeout(() => {
-            context.dispatch('fetchEvents');
+            context.dispatch('getEvents');
           }, 30000));
         })
         .catch((error) => {
@@ -58,7 +66,7 @@ export default new Vuex.Store({
           context.commit('ADD_ERROR', { message: error });
           context.commit('SET_LOADING_STATUS', false);
           context.commit('SET_TIMEOUT', setTimeout(() => {
-            context.dispatch('fetchEvents');
+            context.dispatch('getEvents');
           }, 30000));
         });
     },

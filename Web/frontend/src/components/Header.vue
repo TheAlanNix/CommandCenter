@@ -23,11 +23,23 @@ export default {
     StatusBar,
     TimeframeSelect,
   },
-  beforeDestroy() {
-    clearInterval(this.$store.state.interval);
+  methods: {
+    onBlur(event) {
+      console.log(event);
+      this.$store.dispatch('clearTimeout');
+    },
+    onFocus(event) {
+      console.log(event);
+      this.$store.dispatch('getEvents');
+    },
   },
-  created() {
-    this.$store.dispatch('fetchEvents');
+  beforeDestroy() {
+    this.$store.dispatch('clearTimeout');
+  },
+  mounted() {
+    this.$store.dispatch('getEvents');
+    window.onfocus = this.onFocus;
+    window.onblur = this.onBlur;
   },
 };
 </script>

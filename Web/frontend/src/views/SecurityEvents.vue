@@ -1,29 +1,36 @@
 <template>
   <div id="page-container">
     <Header :pageTitle="pageTitle"/>
+    <div id="filters-container">
+      Filters:
+      <b-badge v-if="filterProduct" variant="success">{{ filterProduct }}</b-badge>
+      <b-badge v-if="filterEventName" variant="success">{{ filterEventName }}</b-badge>
+      <b-badge v-if="!(filterEventName || filterProduct)">None</b-badge>
+      <b-badge v-if="filterEventName || filterProduct" href="#" v-on:click="clearFilters" variant="danger">Clear</b-badge>
+    </div>
     <div class="container-fluid">
       <div class="row">
         <div class="col-12">
           <TimeSeriesChart title="Events Over Time"
-                          :chart_data="eventsOverTime"></TimeSeriesChart>
+                          :chartData="eventsOverTime"></TimeSeriesChart>
         </div>
       </div>
       <div class="row">
         <div class="col-12 col-md-4">
           <PieChart title="Events by Product"
-                    :chart_data="eventsByProduct"
+                    :chartData="eventsByProduct"
                     @selected="onProductSelected"
                     @unselected="onProductUnselected"></PieChart>
         </div>
         <div class="col-12 col-md-4">
           <PieChart title="Events by Name"
-                    :chart_data="eventsByName"
+                    :chartData="eventsByName"
                     @selected="onEventNameSelected"
                     @unselected="onEventNameUnselected"></PieChart>
         </div>
         <div class="col-12 col-md-4">
           <PieChart title="Events by Source IP (Top 25)"
-                    :chart_data="eventsBySource"
+                    :chartData="eventsBySource"
                     @selected="onSourceSelected"
                     @unselected="onSourceUnselected"></PieChart>
         </div>
@@ -80,7 +87,7 @@ export default {
     },
   },
   watch: {
-    filteredEvents: function (val) {
+    filteredEvents(val) {
       if (this.filterProduct && !this.filterEventName) {
         this.eventsByName = this.summarizePieChartData(val, 'event_name');
         this.eventsBySource = this.summarizePieChartData(val, 'src_ip', 25);
@@ -95,24 +102,24 @@ export default {
         this.eventsBySource = this.summarizePieChartData(val, 'src_ip', 25);
       }
     },
-    events: function () {
+    events() {
       this.getEventsOverTime();
       this.filterEvents();
     },
-    filterEventName: function () {
+    filterEventName() {
       this.getEventsOverTime();
       this.filterEvents();
     },
-    filterProduct: function () {
+    filterProduct() {
       this.getEventsOverTime();
       this.filterEvents();
     },
   },
   methods: {
     clearFilters() {
-      this.filter_event_name = null;
-      this.filter_product = null;
-      this.getEvents();
+      this.filterEventName = null;
+      this.filterProduct = null;
+      this.filterEvents();
     },
     filterEvents() {
       if (this.filterProduct || this.filterEventName) {
@@ -251,5 +258,9 @@ export default {
 <style lang="scss">
 #filters-container {
   margin: 5px 40px;
+
+  .badge {
+    margin: auto 2px;
+  }
 }
 </style>

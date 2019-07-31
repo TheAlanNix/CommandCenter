@@ -29,10 +29,10 @@ export default {
   methods: {
     onTimeframeChange(value) {
       this.$store.commit('SET_TIMEFRAME', value);
-      this.$store.dispatch('fetchEvents');
+      this.$store.dispatch('getEvents');
     },
   },
-}
+};
 </script>
 
 <style lang="scss">

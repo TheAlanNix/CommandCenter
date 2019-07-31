@@ -1,20 +1,20 @@
 <template>
-    <div class="chart-panel">
-        <div class="row">
-            <div class="col">
-                <div class="chart-panel-content">
-                    <highcharts :options="chartOptions"></highcharts>
-                </div>
-            </div>
+  <div class="chart-panel">
+    <div class="row">
+      <div class="col">
+        <div class="chart-panel-content">
+          <highcharts :options="chartOptions"></highcharts>
         </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
-import {Chart} from 'highcharts-vue';
+import { Chart } from 'highcharts-vue';
 
 export default {
-  props: ['title', 'chart_data'],
+  props: ['title', 'chartData'],
   components: {
     highcharts: Chart,
   },
@@ -30,19 +30,19 @@ export default {
         xAxis: {
           type: 'datetime',
           title: {
-            text: 'Date'
+            text: 'Date',
           },
         },
         yAxis: {
           title: {
-            text: 'Event Count'
+            text: 'Event Count',
           },
-          min: 0
+          min: 0,
         },
         tooltip: {
           enabled: true,
-          headerFormat: "<b>{point.key}</b><br/>",
-          pointFormat: "Count: {point.y}",
+          headerFormat: '<b>{point.key}</b><br/>',
+          pointFormat: 'Count: {point.y}',
         },
         plotOptions: {
           spline: {
@@ -51,7 +51,7 @@ export default {
             },
           },
         },
-        series: [this.chart_data]
+        series: [this.chartData],
       },
     };
   },
@@ -64,7 +64,7 @@ export default {
     },
   },
   watch: {
-    chart_data: function(newValue) {
+    chartData(newValue) {
       this.chartOptions.series = newValue;
     },
   },
@@ -75,36 +75,36 @@ export default {
 @import "@/assets/_variables.scss";
 
 .chart-panel {
-    background-color: #fff;
-    border: 1px solid $border-color;
-    border-radius: 5px;
-    margin-top: 10px;
-    position: relative;
+  background-color: #fff;
+  border: 1px solid $border-color;
+  border-radius: 5px;
+  margin-top: 10px;
+  position: relative;
 
-    .chart-panel-header {
-        border-bottom: 1px solid $border-color;
-        color: #212529;
-        font-size: 20px;
-        padding: 10px 15px;
+  .chart-panel-header {
+    border-bottom: 1px solid $border-color;
+    color: #212529;
+    font-size: 20px;
+    padding: 10px 15px;
+  }
+
+  .chart-panel-content {
+    //border-top: 1px solid $border-color;
+    padding: 15px;
+    max-height: 80vh;
+    margin-bottom: 0px;
+    overflow-y: scroll;
+
+    .heading {
+      font: 16px Nunito, sans-serif;
+      color: #212529;
     }
 
-    .chart-panel-content {
-        //border-top: 1px solid $border-color;
-        padding: 15px;
-        max-height: 80vh;
-        margin-bottom: 0px;
-        overflow-y: scroll;
-
-        .heading {
-            font: 16px Nunito, sans-serif;
-            color: #212529;
-        }
-
-        .content {
-            display: block;
-            font-size: 12px;
-            margin-left: 20px;
-        }
+    .content {
+      display: block;
+      font-size: 12px;
+      margin-left: 20px;
     }
+  }
 }
 </style>

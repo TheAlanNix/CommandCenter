@@ -4,16 +4,19 @@
       <div class="col">
         <div class="host-panel-header">
           Identity Services Engine
-          <b-dropdown v-if="macAddress" id="remediation_button"
-                      text="Remediate"
-                      size="sm"
-                      variant="outline-danger">
+          <b-dropdown
+            v-if="macAddress"
+            id="remediation_button"
+            text="Remediate"
+            size="sm"
+            variant="outline-danger"
+          >
             <b-dropdown-item v-on:click="clearIseAncStatus(macAddress, '')">None</b-dropdown-item>
-            <b-dropdown-item v-for="(action, index) in actions"
-                             v-on:click="setIseAncStatus(macAddress, action.name)"
-                             :key="index">
-              {{ action.name }}
-            </b-dropdown-item>
+            <b-dropdown-item
+              v-for="(action, index) in actions"
+              v-on:click="setIseAncStatus(macAddress, action.name)"
+              :key="index"
+            >{{ action.name }}</b-dropdown-item>
           </b-dropdown>
         </div>
       </div>
@@ -31,8 +34,7 @@
               <span v-if="iseData.macAddress" class="content">
                 <div>MAC Address: {{ iseData.macAddress }}</div>
                 <div>Endpoint Profile: {{ iseData.endpointProfile }}</div>
-                <div>Endpoint OS: {{ iseData.endpointOperatingSystem }}</div>
-                IP Address(es):
+                <div>Endpoint OS: {{ iseData.endpointOperatingSystem }}</div>IP Address(es):
                 <ul>
                   <li v-for="(ipAddress, index) in iseData.ipAddresses" :key="index">
                     {{ ipAddress }}
@@ -48,9 +50,7 @@
           </b-row>
           <b-row v-if="iseData.adUserResolvedIdentities">
             <b-col>
-              <span class="content">
-                {{ iseData.adUserResolvedIdentities }}
-              </span>
+              <span class="content">{{ iseData.adUserResolvedIdentities }}</span>
             </b-col>
           </b-row>
           <b-row>
@@ -113,20 +113,21 @@ export default {
       actions: [],
       ancPolicy: null,
       interval: null,
-      iseData: [],
+      iseData: null,
       macAddress: null,
     };
   },
   props: ['hostIp'],
   watch: {
-    hostIp: function () {
+    hostIp() {
       this.getIseSessionData();
     },
   },
   methods: {
     getActions() {
       const path = `http://${window.location.hostname}:5000/api/ise_actions`;
-      axios.get(path)
+      axios
+        .get(path)
         .then((res) => {
           console.log(res);
           this.actions = res.data.SearchResult.resources;
@@ -139,7 +140,8 @@ export default {
     },
     getIseSessionData() {
       const path = `http://${window.location.hostname}:5000/api/ise_session_data/${this.hostIp}`;
-      axios.get(path)
+      axios
+        .get(path)
         .then((res) => {
           console.log(res);
           this.iseData = res.data;
@@ -158,7 +160,8 @@ export default {
     },
     getIseAncStatus(macAddress) {
       const path = `http://${window.location.hostname}:5000/api/ise_anc_status/${macAddress}`;
-      axios.get(path)
+      axios
+        .get(path)
         .then((res) => {
           if (res.data.policyName) {
             this.ancPolicy = res.data.policyName;
@@ -178,7 +181,8 @@ export default {
         anc_policy: ancPolicy,
         mac_address: macAddress,
       };
-      axios.post(path, payload)
+      axios
+        .post(path, payload)
         .then((res) => {
           console.log(res);
           this.getIseAncStatus();
@@ -191,7 +195,8 @@ export default {
     },
     clearIseAncStatus(macAddress) {
       const path = `http://${window.location.hostname}:5000/api/ise_anc_status/${macAddress}`;
-      axios.delete(path)
+      axios
+        .delete(path)
         .then((res) => {
           console.log(res);
           this.getIseAncStatus();
@@ -206,15 +211,19 @@ export default {
   created() {
     this.getActions();
     this.getIseSessionData();
-    this.interval = setInterval(() => {
-      // this.getIseSessionData();
-    }, 30000);
+    // this.interval = setInterval(() => {
+    //   this.getIseSessionData();
+    // }, 30000);
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.dropdown-menu > .dropdown-item {
+  padding: 0.25rem 1rem;
+}
+
 #remediation_button {
-    float: right;
+  float: right;
 }
 </style>

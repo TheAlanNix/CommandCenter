@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Host from './views/Host.vue';
+import Hosts from './views/Hosts.vue';
 import NotFound from './views/NotFound.vue';
 import Ping from './views/Ping.vue';
 import SecurityEvents from './views/SecurityEvents.vue';
@@ -16,6 +17,11 @@ export default new Router({
       path: '/',
       name: 'splash',
       component: Splash,
+    },
+    {
+      path: '/hosts',
+      name: 'hosts',
+      component: Hosts,
     },
     {
       path: '/host/:hostIp',
