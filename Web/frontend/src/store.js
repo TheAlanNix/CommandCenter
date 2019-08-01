@@ -41,7 +41,7 @@ export default new Vuex.Store({
       // Clear any existing timeout
       context.commit('CLEAR_TIMEOUT');
     },
-    getEvents(context) {
+    getEvents(context, hostIp) {
       // Clear any existing timeout
       context.commit('CLEAR_TIMEOUT');
 
@@ -49,7 +49,8 @@ export default new Vuex.Store({
       context.commit('SET_LOADING_STATUS', true);
 
       // Get the event data
-      const path = `http://${window.location.hostname}:5000/api/events?timeframe=${this.state.timeframe}`;
+      let path = `http://${window.location.hostname}:5000/api/events?timeframe=${this.state.timeframe}`;
+      if (hostIp) path = `${path}&host_ip=${encodeURIComponent(hostIp)}`;
       console.log(path);
       axios.get(path)
         .then((res) => {
@@ -57,7 +58,7 @@ export default new Vuex.Store({
           context.commit('SET_EVENTS', res.data.events);
           context.commit('SET_LOADING_STATUS', false);
           context.commit('SET_TIMEOUT', setTimeout(() => {
-            context.dispatch('getEvents');
+            context.dispatch('getEvents', hostIp);
           }, 30000));
         })
         .catch((error) => {
@@ -66,7 +67,7 @@ export default new Vuex.Store({
           context.commit('ADD_ERROR', { message: error });
           context.commit('SET_LOADING_STATUS', false);
           context.commit('SET_TIMEOUT', setTimeout(() => {
-            context.dispatch('getEvents');
+            context.dispatch('getEvents', hostIp);
           }, 30000));
         });
     },

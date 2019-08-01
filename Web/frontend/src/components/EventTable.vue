@@ -22,7 +22,9 @@
             ref="eventTable"
           >
             <template slot="empty" slot-scope="scope">
-              <div class="text-center my-2">{{ scope.emptyText }}. You're completely secure. :-)</div>
+              <div class="text-center my-2">
+                {{ scope.emptyText }}. You're completely secure. :-)
+              </div>
             </template>
           </b-table>
         </div>
@@ -33,14 +35,14 @@
 
 <script>
 export default {
-  props: ["events"],
+  props: ['events'],
   data() {
     return {
       fields: [
-        "product",
-        "event_name",
-        "event_details",
-        { key: "formatted_timestamp", label: "Timestamp" },
+        'product',
+        'event_name',
+        'event_details',
+        { key: 'formatted_timestamp', label: 'Timestamp' },
       ],
       latestEvents: [],
       selectedEvent: null,
@@ -53,17 +55,17 @@ export default {
     rowSelected(items) {
       if (items.length > 0) {
         [this.selectedEvent] = items;
-        this.$emit("rowSelected", items[0]);
+        this.$emit('rowSelected', items[0]);
       } else {
         this.selectedEvent = null;
-        this.$emit("rowSelected", null);
+        this.$emit('rowSelected', null);
       }
     },
     selectFirstEvent() {
       if (this.selectedEvent === null) {
         const eventTable = this.$refs.eventTable.$el;
-        const tableBody = eventTable.getElementsByTagName("tbody")[0];
-        const tableRows = tableBody.getElementsByTagName("tr");
+        const tableBody = eventTable.getElementsByTagName('tbody')[0];
+        const tableRows = tableBody.getElementsByTagName('tr');
         tableRows[0].click();
       }
     },

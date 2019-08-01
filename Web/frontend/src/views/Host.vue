@@ -66,6 +66,9 @@ export default {
       this.getEventsOverTime();
       this.filterEvents();
     },
+    timeframe() {
+      this.$store.dispatch('getEvents', this.hostIp);
+    },
   },
   methods: {
     getEventsOverTime() {
@@ -112,6 +115,12 @@ export default {
     onEventUpdate(event) {
       this.selectedEvent = event;
     },
+  },
+  beforeDestroy() {
+    this.$store.dispatch('clearTimeout');
+  },
+  created() {
+    this.$store.dispatch('getEvents', this.hostIp);
   },
 };
 </script>

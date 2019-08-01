@@ -20,9 +20,6 @@
             :events="['stabilized']"
             @stabilized="onGraphStabilized"
             style="height: 45vh"
-            v-on:mouseenter.native="onMouseEnter"
-            v-on:mouseleave.native="onMouseLeave"
-            v-on:wheel.native="onMouseWheel"
           ></VisNetwork>
         </div>
       </div>
@@ -234,14 +231,13 @@ export default {
 
       return hostId;
     },
-    processEdge(edge) {
-      // Get the edge IDs
-      const clientId = edge.client['@ip-address'];
-      const serverId = edge.server['@ip-address'];
-
-      // Get the service
-      const service = edge['@service'];
-    },
+    // processEdge(edge) {
+    //   // Get the edge IDs
+    //   const clientId = edge.client['@ip-address'];
+    //   const serverId = edge.server['@ip-address'];
+    //   // Get the service
+    //   const service = edge['@service'];
+    // },
     onGraphStabilized() {
       this.$refs.network.fit({ animation: true });
     },
@@ -280,6 +276,6 @@ export default {
 }
 
 .host-panel-content {
-  overflow:hidden
+  overflow: hidden;
 }
 </style>

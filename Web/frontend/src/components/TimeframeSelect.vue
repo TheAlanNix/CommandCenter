@@ -29,7 +29,6 @@ export default {
   methods: {
     onTimeframeChange(value) {
       this.$store.commit('SET_TIMEFRAME', value);
-      this.$store.dispatch('getEvents');
     },
   },
 };

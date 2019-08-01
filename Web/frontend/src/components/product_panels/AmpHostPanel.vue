@@ -110,7 +110,7 @@ export default {
       axios.get(path)
         .then((res) => {
           console.log(res.data[0]);
-          this.ampData = res.data[0];
+          [this.ampData] = res.data;
         })
         .catch((error) => {
           // eslint-disable-next-line

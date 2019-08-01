@@ -1,38 +1,48 @@
 <template>
   <div id="page-container">
-    <Header :pageTitle="pageTitle"/>
+    <Header :pageTitle="pageTitle" />
     <div id="filters-container">
       Filters:
       <b-badge v-if="filterProduct" variant="success">{{ filterProduct }}</b-badge>
       <b-badge v-if="filterEventName" variant="success">{{ filterEventName }}</b-badge>
       <b-badge v-if="!(filterEventName || filterProduct)">None</b-badge>
-      <b-badge v-if="filterEventName || filterProduct" href="#" v-on:click="clearFilters" variant="danger">Clear</b-badge>
+      <b-badge
+        v-if="filterEventName || filterProduct"
+        href="#"
+        v-on:click="clearFilters"
+        variant="danger"
+      >Clear</b-badge>
     </div>
     <div class="container-fluid">
       <div class="row">
         <div class="col-12">
-          <TimeSeriesChart title="Events Over Time"
-                          :chartData="eventsOverTime"></TimeSeriesChart>
+          <TimeSeriesChart title="Events Over Time" :chartData="eventsOverTime"></TimeSeriesChart>
         </div>
       </div>
       <div class="row">
         <div class="col-12 col-md-4">
-          <PieChart title="Events by Product"
-                    :chartData="eventsByProduct"
-                    @selected="onProductSelected"
-                    @unselected="onProductUnselected"></PieChart>
+          <PieChart
+            title="Events by Product"
+            :chartData="eventsByProduct"
+            @selected="onProductSelected"
+            @unselected="onProductUnselected"
+          ></PieChart>
         </div>
         <div class="col-12 col-md-4">
-          <PieChart title="Events by Name"
-                    :chartData="eventsByName"
-                    @selected="onEventNameSelected"
-                    @unselected="onEventNameUnselected"></PieChart>
+          <PieChart
+            title="Events by Name"
+            :chartData="eventsByName"
+            @selected="onEventNameSelected"
+            @unselected="onEventNameUnselected"
+          ></PieChart>
         </div>
         <div class="col-12 col-md-4">
-          <PieChart title="Events by Source IP (Top 25)"
-                    :chartData="eventsBySource"
-                    @selected="onSourceSelected"
-                    @unselected="onSourceUnselected"></PieChart>
+          <PieChart
+            title="Events by Source IP (Top 25)"
+            :chartData="eventsBySource"
+            @selected="onSourceSelected"
+            @unselected="onSourceUnselected"
+          ></PieChart>
         </div>
       </div>
       <div class="row">
@@ -40,8 +50,7 @@
           <EventTable :events="filteredEvents" @rowSelected="onEventUpdate"></EventTable>
         </div>
         <div class="col-12 col-md-6">
-          <EventDetails v-if="selectedEvent"
-                        :selectedEvent="selectedEvent"></EventDetails>
+          <EventDetails v-if="selectedEvent" :selectedEvent="selectedEvent"></EventDetails>
         </div>
       </div>
     </div>
@@ -87,6 +96,10 @@ export default {
     },
   },
   watch: {
+    events() {
+      this.getEventsOverTime();
+      this.filterEvents();
+    },
     filteredEvents(val) {
       if (this.filterProduct && !this.filterEventName) {
         this.eventsByName = this.summarizePieChartData(val, 'event_name');
@@ -102,10 +115,6 @@ export default {
         this.eventsBySource = this.summarizePieChartData(val, 'src_ip', 25);
       }
     },
-    events() {
-      this.getEventsOverTime();
-      this.filterEvents();
-    },
     filterEventName() {
       this.getEventsOverTime();
       this.filterEvents();
@@ -113,6 +122,9 @@ export default {
     filterProduct() {
       this.getEventsOverTime();
       this.filterEvents();
+    },
+    timeframe() {
+      this.$store.dispatch('getEvents');
     },
   },
   methods: {
@@ -144,7 +156,8 @@ export default {
       console.log(path);
       if (this.filterProduct) path = `${path}&product=${encodeURIComponent(this.filterProduct)}`;
       if (this.filterEventName) path = `${path}&event_name=${encodeURIComponent(this.filterEventName)}`;
-      axios.get(path)
+      axios
+        .get(path)
         .then((res) => {
           console.log(res.data);
 
@@ -159,10 +172,7 @@ export default {
             const date = new Date(eventCount._id.$date);
 
             // Push the data onto a return array
-            returnData.data.push([
-              date.getTime(),
-              eventCount.count,
-            ]);
+            returnData.data.push([date.getTime(), eventCount.count]);
           });
 
           this.eventsOverTime = returnData;
@@ -226,7 +236,11 @@ export default {
       // Iterate through all events
       events.forEach((event) => {
         // Get the index of the event property
-        const eventIndex = this.inArrayWithAttribute(eventCounts, 'name', event[property]);
+        const eventIndex = this.inArrayWithAttribute(
+          eventCounts,
+          'name',
+          event[property],
+        );
 
         // Look to see if the Event Name exists
         if (eventIndex === -1) {
@@ -251,6 +265,12 @@ export default {
 
       return eventCounts;
     },
+  },
+  beforeDestroy() {
+    this.$store.dispatch('clearTimeout');
+  },
+  created() {
+    this.$store.dispatch('getEvents');
   },
 };
 </script>
