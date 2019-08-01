@@ -94,7 +94,7 @@ def get_events():
         query_filter['event_name'] = {'$eq': request.args['event_name']}
 
     # Get the events
-    latest_events = command_center_events.find(query_filter).sort('timestamp', -1)
+    latest_events = command_center_events.find(query_filter).sort('timestamp', -1).limit(20000)
 
     # Set up a response object
     response_object = {

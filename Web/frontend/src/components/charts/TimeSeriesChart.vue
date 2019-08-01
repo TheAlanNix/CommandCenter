@@ -22,7 +22,7 @@ export default {
     return {
       chartOptions: {
         chart: {
-          type: 'spline',
+          type: 'column',
         },
         title: {
           text: this.title,
@@ -39,15 +39,21 @@ export default {
           },
           min: 0,
         },
+        legend: {
+          enabled: false,
+        },
         tooltip: {
           enabled: true,
           headerFormat: '<b>{point.key}</b><br/>',
           pointFormat: 'Count: {point.y}',
         },
         plotOptions: {
-          spline: {
+          column: {
             marker: {
               enabled: true,
+            },
+            events: {
+              click: this.click,
             },
           },
         },
@@ -56,11 +62,8 @@ export default {
     };
   },
   methods: {
-    selected(event) {
-      this.$emit('selected', event.target.name);
-    },
-    unselected(event) {
-      this.$emit('unselected', event.target.name);
+    click(event) {
+      this.$emit('click', event.point.x);
     },
   },
   watch: {
