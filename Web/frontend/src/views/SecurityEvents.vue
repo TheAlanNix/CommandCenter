@@ -159,7 +159,7 @@ export default {
           if (this.filterProduct && event.product !== this.filterProduct) filterMet = false;
           if (this.filterEventName && event.event_name !== this.filterEventName) filterMet = false;
           if ((this.filterStartTime && this.filterEndTime) && 
-            (eventDate < this.filterStartTime) || (eventDate > this.filterEndTime)) {
+            ((eventDate < this.filterStartTime) || (eventDate > this.filterEndTime))) {
               filterMet = false;
           }
           if (filterMet) returnEvents.push(event);
