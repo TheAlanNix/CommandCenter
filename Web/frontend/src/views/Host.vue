@@ -24,6 +24,7 @@
 
 <script>
 import axios from 'axios';
+import { mapState } from 'vuex';
 import EventDetails from '../components/EventDetails.vue';
 import EventTable from '../components/EventTable.vue';
 import Header from '../components/Header.vue';
@@ -54,20 +55,18 @@ export default {
     TimeSeriesChart,
   },
   computed: {
-    events() {
-      return this.$store.state.events;
-    },
-    timeframe() {
-      return this.$store.state.timeframe;
-    },
+    ...mapState([
+      'events',
+      'timeframe',
+    ]),
   },
   watch: {
     events() {
       this.getEventsOverTime();
       this.filterEvents();
-    },
-    timeframe() {
-      this.$store.dispatch('getEvents', this.hostIp);
+      this.$store.dispatch('setTimeout', setTimeout(() => {
+        this.$store.dispatch('getEvents');
+      }, 30000));
     },
   },
   methods: {
@@ -121,6 +120,9 @@ export default {
   },
   created() {
     this.$store.dispatch('getEvents', this.hostIp);
+    this.$store.dispatch('setTimeout', setTimeout(() => {
+      this.$store.dispatch('getEvents', this.hostIp);
+    }, 30000));
   },
 };
 </script>

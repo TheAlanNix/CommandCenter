@@ -12,6 +12,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
   name: 'TimeframeSelect',
   data() {
@@ -26,9 +28,16 @@ export default {
       timeframeSelected: this.$store.state.timeframe,
     };
   },
+  computed: {
+    ...mapState([
+      'timeframe',
+    ]),
+  },
   methods: {
     onTimeframeChange(value) {
-      this.$store.commit('SET_TIMEFRAME', value);
+      this.$store.dispatch('setTimeframe', value);
+      this.$store.dispatch('clearTimeout');
+      this.$store.dispatch('getEvents');
     },
   },
 };

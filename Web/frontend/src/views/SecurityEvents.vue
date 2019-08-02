@@ -5,10 +5,10 @@
       Filters:
       <b-badge v-if="filterProduct" variant="success">{{ filterProduct }}</b-badge>
       <b-badge v-if="filterEventName" variant="success">{{ filterEventName }}</b-badge>
-      <b-badge v-if="!(filterEventName || filterProduct || (filterEndTime && filterStartTime))">None</b-badge>
-      <b-badge v-if="(filterEndTime && filterStartTime)">
+      <b-badge v-if="(filterEndTime && filterStartTime)" variant="success">
         {{ formatDate(filterStartTime) }} through {{ formatDate(filterEndTime) }}
       </b-badge>
+      <b-badge v-if="!(filterEventName || filterProduct || (filterEndTime && filterStartTime))">None</b-badge>
       <b-badge
         v-if="filterEventName || filterProduct || (filterEndTime && filterStartTime)"
         href="#"
@@ -65,6 +65,7 @@
 
 <script>
 import axios from 'axios';
+import { mapState } from 'vuex';
 import EventDetails from '../components/EventDetails.vue';
 import EventTable from '../components/EventTable.vue';
 import Header from '../components/Header.vue';
@@ -96,17 +97,18 @@ export default {
     TimeSeriesChart,
   },
   computed: {
-    events() {
-      return this.$store.state.events;
-    },
-    timeframe() {
-      return this.$store.state.timeframe;
-    },
+    ...mapState([
+      'events',
+      'timeframe',
+    ]),
   },
   watch: {
     events() {
       this.getEventsOverTime();
       this.filterEvents();
+      this.$store.dispatch('setTimeout', setTimeout(() => {
+        this.$store.dispatch('getEvents');
+      }, 30000));
     },
     filteredEvents(val) {
       if (this.filterProduct && !this.filterEventName) {
@@ -133,9 +135,6 @@ export default {
     filterProduct() {
       this.getEventsOverTime();
       this.filterEvents();
-    },
-    timeframe() {
-      this.$store.dispatch('getEvents');
     },
   },
   methods: {
@@ -316,6 +315,9 @@ export default {
   },
   created() {
     this.$store.dispatch('getEvents');
+    this.$store.dispatch('setTimeout', setTimeout(() => {
+      this.$store.dispatch('getEvents');
+    }, 30000));
   },
 };
 </script>

@@ -37,9 +37,15 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    setTimeframe(context, timeframe) {
+      context.commit('SET_TIMEFRAME', timeframe);
+    },
     clearTimeout(context) {
       // Clear any existing timeout
       context.commit('CLEAR_TIMEOUT');
+    },
+    setTimeout(context, timeout) {
+      context.commit('SET_TIMEOUT', timeout);
     },
     getEvents(context, hostIp) {
       // Clear any existing timeout
@@ -54,21 +60,14 @@ export default new Vuex.Store({
       console.log(path);
       axios.get(path)
         .then((res) => {
-          console.log(res.data);
           context.commit('SET_EVENTS', res.data.events);
           context.commit('SET_LOADING_STATUS', false);
-          context.commit('SET_TIMEOUT', setTimeout(() => {
-            context.dispatch('getEvents', hostIp);
-          }, 30000));
         })
         .catch((error) => {
           // eslint-disable-next-line
           console.error(error);
           context.commit('ADD_ERROR', { message: error });
           context.commit('SET_LOADING_STATUS', false);
-          context.commit('SET_TIMEOUT', setTimeout(() => {
-            context.dispatch('getEvents', hostIp);
-          }, 30000));
         });
     },
   },
