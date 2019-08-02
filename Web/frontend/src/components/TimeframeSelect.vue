@@ -16,6 +16,7 @@ import { mapState } from 'vuex';
 
 export default {
   name: 'TimeframeSelect',
+  props: ['hostIp'],
   data() {
     return {
       timeframeOptions: [
@@ -37,7 +38,7 @@ export default {
     onTimeframeChange(value) {
       this.$store.dispatch('setTimeframe', value);
       this.$store.dispatch('clearTimeout');
-      this.$store.dispatch('getEvents');
+      this.$store.dispatch('getEvents', this.hostIp);
     },
   },
 };

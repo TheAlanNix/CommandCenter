@@ -2,7 +2,7 @@
   <div>
     <MenuBar/>
     <StatusBar/>
-    <TimeframeSelect/>
+    <TimeframeSelect :hostIp="hostIp" />
     <div id="page-title">{{ pageTitle }} <i v-show="this.$store.state.loading"
                                             id="loading"
                                             class="fa fa-refresh fa-spin fa-1x"></i>
@@ -17,7 +17,7 @@ import TimeframeSelect from './TimeframeSelect.vue';
 
 export default {
   name: 'Header',
-  props: ['pageTitle'],
+  props: ['hostIp', 'pageTitle'],
   components: {
     MenuBar,
     StatusBar,

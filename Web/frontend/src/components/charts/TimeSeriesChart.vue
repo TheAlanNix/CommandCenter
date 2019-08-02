@@ -23,6 +23,7 @@ export default {
       chartOptions: {
         chart: {
           type: 'column',
+          zoomType: 'x',
         },
         title: {
           text: this.title,
