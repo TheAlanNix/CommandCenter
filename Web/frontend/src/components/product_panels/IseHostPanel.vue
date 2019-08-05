@@ -133,7 +133,6 @@ export default {
           this.actions = res.data.SearchResult.resources;
         })
         .catch((error) => {
-          // eslint-disable-next-line
           console.error(error);
           this.$store.commit('ADD_ERROR', { message: error });
         });
@@ -153,16 +152,17 @@ export default {
           }
         })
         .catch((error) => {
-          // eslint-disable-next-line
           console.error(error);
           this.$store.commit('ADD_ERROR', { message: error });
         });
     },
     getIseAncStatus(macAddress) {
       const path = `http://${window.location.hostname}:5000/api/ise_anc_status/${macAddress}`;
+      console.log(path);
       axios
         .get(path)
         .then((res) => {
+          console.log(res);
           if (res.data.policyName) {
             this.ancPolicy = res.data.policyName;
           } else {
@@ -170,7 +170,6 @@ export default {
           }
         })
         .catch((error) => {
-          // eslint-disable-next-line
           console.error(error);
           this.$store.commit('ADD_ERROR', { message: error });
         });
@@ -185,10 +184,9 @@ export default {
         .post(path, payload)
         .then((res) => {
           console.log(res);
-          this.getIseAncStatus();
+          this.getIseAncStatus(macAddress);
         })
         .catch((error) => {
-          // eslint-disable-next-line
           console.error(error);
           this.$store.commit('ADD_ERROR', { message: error });
         });
@@ -199,10 +197,9 @@ export default {
         .delete(path)
         .then((res) => {
           console.log(res);
-          this.getIseAncStatus();
+          this.getIseAncStatus(macAddress);
         })
         .catch((error) => {
-          // eslint-disable-next-line
           console.error(error);
           this.$store.commit('ADD_ERROR', { message: error });
         });
@@ -211,18 +208,11 @@ export default {
   created() {
     this.getActions();
     this.getIseSessionData();
-    // this.interval = setInterval(() => {
-    //   this.getIseSessionData();
-    // }, 30000);
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.dropdown-menu > .dropdown-item {
-  padding: 0.25rem 1rem;
-}
-
 #remediation_button {
   float: right;
 }

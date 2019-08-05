@@ -95,9 +95,8 @@ export default {
           this.eventsOverTime = returnData;
         })
         .catch((error) => {
-          // eslint-disable-next-line
           console.error(error);
-          this.$store.commit('ADD_ERROR', { message: error });
+          this.$store.dispatch('addError', { message: error });
         });
     },
     filterEvents() {

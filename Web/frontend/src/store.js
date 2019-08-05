@@ -16,6 +16,9 @@ export default new Vuex.Store({
     ADD_ERROR(state, error) {
       state.errors.push(error);
     },
+    DELETE_ERROR(state, errorIndex) {
+      state.errors.splice(errorIndex, 1);
+    },
     SET_ERRORS(state, errors) {
       state.errors = errors;
     },
@@ -37,6 +40,12 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    addError(context, error) {
+      context.commit('ADD_ERROR', error);
+    },
+    deleteError(context, errorIndex) {
+      context.commit('DELETE_ERROR', errorIndex);
+    },
     setTimeframe(context, timeframe) {
       context.commit('SET_TIMEFRAME', timeframe);
     },
@@ -64,7 +73,6 @@ export default new Vuex.Store({
           context.commit('SET_LOADING_STATUS', false);
         })
         .catch((error) => {
-          // eslint-disable-next-line
           console.error(error);
           context.commit('ADD_ERROR', { message: error });
           context.commit('SET_LOADING_STATUS', false);
