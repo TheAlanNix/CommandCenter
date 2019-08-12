@@ -249,6 +249,9 @@ export default {
       }
       this.processFlows();
     },
+    hostIp() {
+      this.getFlows();
+    },
     timeframe() {
       this.getFlows();
     },

@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col">
         <div class="chart-panel-content">
-          <highcharts :options="chartOptions"></highcharts>
+          <highcharts ref="chart" :options="chartOptions"></highcharts>
         </div>
       </div>
     </div>

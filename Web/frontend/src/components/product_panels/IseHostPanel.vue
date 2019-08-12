@@ -184,6 +184,7 @@ export default {
         .post(path, payload)
         .then((res) => {
           console.log(res);
+          this.$store.dispatch('addNotification', 'ANC Status Successfully Set');
           this.getIseAncStatus(macAddress);
         })
         .catch((error) => {
@@ -197,6 +198,7 @@ export default {
         .delete(path)
         .then((res) => {
           console.log(res);
+          this.$store.dispatch('addNotification', 'ANC Status Successfully Cleared');
           this.getIseAncStatus(macAddress);
         })
         .catch((error) => {

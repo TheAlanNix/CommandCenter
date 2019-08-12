@@ -41,7 +41,7 @@ export default {
       eventsOverTime: [],
       filteredEvents: [],
       hostSnapshot: [],
-      pageTitle: `Host ${this.hostIp}`,
+      pageTitle: `Security Events > Host ${this.hostIp}`,
       selectedEvent: null,
     };
   },
@@ -64,6 +64,14 @@ export default {
     events() {
       this.getEventsOverTime();
       this.filterEvents();
+      this.$store.dispatch('setTimeout', setTimeout(() => {
+        this.$store.dispatch('getEvents', this.hostIp);
+      }, 30000));
+    },
+    hostIp() {
+      this.pageTitle = `Security Events > Host ${this.hostIp}`,
+      this.getEventsOverTime();
+      this.$store.dispatch('getEvents', this.hostIp);
       this.$store.dispatch('setTimeout', setTimeout(() => {
         this.$store.dispatch('getEvents', this.hostIp);
       }, 30000));

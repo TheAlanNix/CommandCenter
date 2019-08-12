@@ -1,10 +1,10 @@
 <template>
   <div class="event-panel">
-    <div class="row">
-      <div class="col">
+    <b-row>
+      <b-col>
         <div class="event-panel-header">Events ({{ latestEvents.length }})</div>
-      </div>
-    </div>
+      </b-col>
+    </b-row>
     <div class="row">
       <div class="col">
         <div class="event-panel-table">

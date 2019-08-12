@@ -20,6 +20,7 @@
       <div class="row">
         <div class="col-12">
           <TimeSeriesChart
+            ref="eventsOverTimeChart"
             title="Events Over Time"
             :chartData="eventsOverTime"
             @click="onTimeSelected"></TimeSeriesChart>
@@ -143,6 +144,7 @@ export default {
       this.filterEventName = null;
       this.filterProduct = null;
       this.filterStartTime = null;
+      this.$refs.eventsOverTimeChart.$refs.chart.chart.zoom();
       this.filterEvents();
     },
     filterEvents() {
@@ -249,7 +251,7 @@ export default {
       console.log(value);
     },
     onTimeSelected(value) {
-      // Generate the start and end date (10 total minutes)
+      // Generate the start and end date (5 total minutes)
       const startDate = new Date(value);
       const endDate = new Date(value + (5 * 60000));
 

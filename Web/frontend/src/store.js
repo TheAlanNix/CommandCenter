@@ -9,6 +9,7 @@ export default new Vuex.Store({
     errors: [],
     events: [],
     loading: false,
+    notification: null,
     timeframe: 6,
     timeout: null,
   },
@@ -21,6 +22,12 @@ export default new Vuex.Store({
     },
     SET_ERRORS(state, errors) {
       state.errors = errors;
+    },
+    ADD_NOTIFICATION(state, notification) {
+      state.notification = notification;
+    },
+    DELETE_NOTIFICATION(state) {
+      state.notification = null;
     },
     SET_EVENTS(state, events) {
       state.events = events;
@@ -46,6 +53,12 @@ export default new Vuex.Store({
     deleteError(context, errorIndex) {
       context.commit('DELETE_ERROR', errorIndex);
     },
+    addNotification(context, notification) {
+      context.commit('ADD_NOTIFICATION', notification);
+    },
+    deleteNotification(context) {
+      context.commit('DELETE_NOTIFICATION');
+    },
     setTimeframe(context, timeframe) {
       context.commit('SET_TIMEFRAME', timeframe);
     },
@@ -67,7 +80,7 @@ export default new Vuex.Store({
       let path = `http://${window.location.hostname}:5000/api/events?timeframe=${this.state.timeframe}`;
       if (hostIp) path = `${path}&host_ip=${encodeURIComponent(hostIp)}`;
       console.log(path);
-      axios.get(path)
+      axios.get(path, { timeout: 60000 })
         .then((res) => {
           context.commit('SET_EVENTS', res.data.events);
           context.commit('SET_LOADING_STATUS', false);
