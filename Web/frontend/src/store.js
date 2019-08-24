@@ -11,7 +11,6 @@ export default new Vuex.Store({
     loading: false,
     notification: null,
     timeframe: 6,
-    timeout: null,
   },
   mutations: {
     ADD_ERROR(state, error) {
@@ -31,13 +30,6 @@ export default new Vuex.Store({
     },
     SET_EVENTS(state, events) {
       state.events = events;
-    },
-    CLEAR_TIMEOUT(state) {
-      clearTimeout(state.timeout);
-      state.timeout = null;
-    },
-    SET_TIMEOUT(state, timeout) {
-      state.timeout = timeout;
     },
     SET_LOADING_STATUS(state, status) {
       state.loading = status;
@@ -62,16 +54,9 @@ export default new Vuex.Store({
     setTimeframe(context, timeframe) {
       context.commit('SET_TIMEFRAME', timeframe);
     },
-    clearTimeout(context) {
-      // Clear any existing timeout
-      context.commit('CLEAR_TIMEOUT');
-    },
-    setTimeout(context, timeout) {
-      context.commit('SET_TIMEOUT', timeout);
-    },
     getEvents(context, hostIp) {
       // Clear any existing timeout
-      context.commit('CLEAR_TIMEOUT');
+      // context.commit('CLEAR_TIMEOUT');
 
       // Indicate that we're loading
       context.commit('SET_LOADING_STATUS', true);

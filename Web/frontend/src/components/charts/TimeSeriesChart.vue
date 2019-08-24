@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col">
         <div class="chart-panel-content">
-          <highcharts ref="chart" :options="chartOptions"></highcharts>
+          <Highcharts ref="chart" :options="chartOptions"></Highcharts>
         </div>
       </div>
     </div>
@@ -16,7 +16,7 @@ import { Chart } from 'highcharts-vue';
 export default {
   props: ['title', 'chartData'],
   components: {
-    highcharts: Chart,
+    Highcharts: Chart,
   },
   data() {
     return {

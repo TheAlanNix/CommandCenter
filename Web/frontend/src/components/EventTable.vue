@@ -63,10 +63,7 @@ export default {
     },
     selectFirstEvent() {
       if (this.selectedEvent === null) {
-        const eventTable = this.$refs.eventTable.$el;
-        const tableBody = eventTable.getElementsByTagName('tbody')[0];
-        const tableRows = tableBody.getElementsByTagName('tr');
-        tableRows[0].click();
+        this.$refs.eventTable.selectRow(0);
       }
     },
   },

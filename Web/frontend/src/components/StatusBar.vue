@@ -1,19 +1,29 @@
 <template>
   <div id="status-container" v-if="errors.length > 0 || notification">
-    <b-alert v-if="notification"
-             :show="notificationSeconds"
-             dismissible
-             fade
-             variant="success"
-             @dismiss-count-down="notificationCountdownChanged">
+    <b-alert
+      v-if="notification"
+      :show="notificationSeconds"
+      dismissible
+      fade
+      variant="success"
+      @dismiss-count-down="notificationCountdownChanged"
+    >
       {{ notification }}
-      <button type="button" aria-label="Close" class="close" v-on:click="deleteError(index)">×</button>
+      <button
+        type="button"
+        aria-label="Close"
+        class="close"
+        v-on:click="deleteError(index)"
+      >×</button>
     </b-alert>
-    <b-alert v-for="(error, index) in errors" :key="index"
-             show
-             variant="danger">
+    <b-alert v-for="(error, index) in errors" :key="index" show variant="danger">
       {{ error.message }}
-      <button type="button" aria-label="Close" class="close" v-on:click="deleteError(index)">×</button>
+      <button
+        type="button"
+        aria-label="Close"
+        class="close"
+        v-on:click="deleteError(index)"
+      >×</button>
     </b-alert>
   </div>
 </template>
@@ -38,8 +48,8 @@
 export default {
   data() {
     return {
-      notificationSeconds: 0
-    }
+      notificationSeconds: 0,
+    };
   },
   computed: {
     errors() {
@@ -80,5 +90,3 @@ export default {
   color: inherit;
 }
 </style>
-
-

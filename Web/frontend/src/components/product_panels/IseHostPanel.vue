@@ -36,7 +36,7 @@
                 <div>Endpoint Profile: {{ iseData.endpointProfile }}</div>
                 <div>Endpoint OS: {{ iseData.endpointOperatingSystem }}</div>IP Address(es):
                 <ul>
-                  <li v-for="(ipAddress, index) in iseData.ipAddresses" :key="index">
+                  <li v-for="(ipAddress, index) in ipAddresses" :key="index">
                     {{ ipAddress }}
                   </li>
                 </ul>
@@ -118,6 +118,16 @@ export default {
     };
   },
   props: ['hostIp'],
+  computed: {
+    ipAddresses() {
+      return this.iseData.ipAddresses.filter((ipAddress) => {
+        if (ipAddress) {
+          return ipAddress;
+        }
+        return false;
+      });
+    },
+  },
   watch: {
     hostIp() {
       this.getIseSessionData();

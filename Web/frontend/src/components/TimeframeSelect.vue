@@ -37,8 +37,6 @@ export default {
   methods: {
     onTimeframeChange(value) {
       this.$store.dispatch('setTimeframe', value);
-      this.$store.dispatch('clearTimeout');
-      this.$store.dispatch('getEvents', this.hostIp);
     },
   },
 };

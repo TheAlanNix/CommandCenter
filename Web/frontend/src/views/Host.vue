@@ -43,6 +43,7 @@ export default {
       hostSnapshot: [],
       pageTitle: `Security Events > Host ${this.hostIp}`,
       selectedEvent: null,
+      timeout: null,
     };
   },
   components: {
@@ -64,17 +65,21 @@ export default {
     events() {
       this.getEventsOverTime();
       this.filterEvents();
-      this.$store.dispatch('setTimeout', setTimeout(() => {
+      this.timeout = setTimeout(() => {
         this.$store.dispatch('getEvents', this.hostIp);
-      }, 30000));
+      }, 30000);
     },
     hostIp() {
-      this.pageTitle = `Security Events > Host ${this.hostIp}`,
+      this.pageTitle = `Security Events > Host ${this.hostIp}`;
       this.getEventsOverTime();
       this.$store.dispatch('getEvents', this.hostIp);
       this.$store.dispatch('setTimeout', setTimeout(() => {
         this.$store.dispatch('getEvents', this.hostIp);
       }, 30000));
+    },
+    timeframe() {
+      clearTimeout(this.timeout);
+      this.$store.dispatch('getEvents', this.hostIp);
     },
   },
   methods: {
@@ -123,13 +128,10 @@ export default {
     },
   },
   beforeDestroy() {
-    this.$store.dispatch('clearTimeout');
+    clearTimeout(this.timeout);
   },
   created() {
     this.$store.dispatch('getEvents', this.hostIp);
-    this.$store.dispatch('setTimeout', setTimeout(() => {
-      this.$store.dispatch('getEvents', this.hostIp);
-    }, 30000));
   },
 };
 </script>

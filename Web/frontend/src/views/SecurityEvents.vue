@@ -8,7 +8,9 @@
       <b-badge v-if="(filterEndTime && filterStartTime)" variant="success">
         {{ formatDate(filterStartTime) }} through {{ formatDate(filterEndTime) }}
       </b-badge>
-      <b-badge v-if="!(filterEventName || filterProduct || (filterEndTime && filterStartTime))">None</b-badge>
+      <b-badge
+        v-if="!(filterEventName || filterProduct || (filterEndTime && filterStartTime))"
+      >None</b-badge>
       <b-badge
         v-if="filterEventName || filterProduct || (filterEndTime && filterStartTime)"
         href="#"
@@ -29,6 +31,7 @@
       <div class="row">
         <div class="col-12 col-md-4">
           <PieChart
+            ref="eventsByProduct"
             title="Events by Product"
             :chartData="eventsByProduct"
             @selected="onProductSelected"
@@ -37,6 +40,7 @@
         </div>
         <div class="col-12 col-md-4">
           <PieChart
+            ref="eventsByName"
             title="Events by Name"
             :chartData="eventsByName"
             @selected="onEventNameSelected"
@@ -88,6 +92,7 @@ export default {
       filterStartTime: null,
       pageTitle: 'Security Events',
       selectedEvent: null,
+      timeout: null,
     };
   },
   components: {
@@ -107,9 +112,9 @@ export default {
     events() {
       this.getEventsOverTime();
       this.filterEvents();
-      this.$store.dispatch('setTimeout', setTimeout(() => {
+      this.timeout = setTimeout(() => {
         this.$store.dispatch('getEvents');
-      }, 30000));
+      }, 30000);
     },
     filteredEvents(val) {
       if (this.filterProduct && !this.filterEventName) {
@@ -137,6 +142,10 @@ export default {
       this.getEventsOverTime();
       this.filterEvents();
     },
+    timeframe() {
+      clearTimeout(this.timeout);
+      this.$store.dispatch('getEvents');
+    },
   },
   methods: {
     clearFilters() {
@@ -144,11 +153,18 @@ export default {
       this.filterEventName = null;
       this.filterProduct = null;
       this.filterStartTime = null;
+      this.$refs.eventsByProduct.$refs.chart.chart.series[0].data.forEach((point) => {
+        point.select(false);
+      });
+      this.$refs.eventsByName.$refs.chart.chart.series[0].data.forEach((point) => {
+        point.select(false);
+      });
       this.$refs.eventsOverTimeChart.$refs.chart.chart.zoom();
       this.filterEvents();
     },
     filterEvents() {
-      if (this.filterProduct || this.filterEventName || (this.filterEndTime && this.filterStartTime)) {
+      if (this.filterProduct || this.filterEventName
+        || (this.filterEndTime && this.filterStartTime)) {
         const returnEvents = [];
 
         this.events.forEach((event) => {
@@ -159,9 +175,9 @@ export default {
 
           if (this.filterProduct && event.product !== this.filterProduct) filterMet = false;
           if (this.filterEventName && event.event_name !== this.filterEventName) filterMet = false;
-          if ((this.filterStartTime && this.filterEndTime) && 
-            ((eventDate < this.filterStartTime) || (eventDate > this.filterEndTime))) {
-              filterMet = false;
+          if ((this.filterStartTime && this.filterEndTime)
+            && ((eventDate < this.filterStartTime) || (eventDate > this.filterEndTime))) {
+            filterMet = false;
           }
           if (filterMet) returnEvents.push(event);
         });
@@ -178,16 +194,16 @@ export default {
 
       let hour = date.getUTCHours();
       let minutes = date.getUTCMinutes();
-      
+
       if (hour < 10) {
-        hour = "0" + hour;
+        hour = `0 ${hour}`;
       }
 
       if (minutes < 10) {
-        minutes = "0" + minutes;
+        minutes = `0 ${minutes}`;
       }
 
-      return mm+"/"+dd+"/"+yyyy+" "+hour+":"+minutes+" UTC";
+      return `${mm}/${dd}/${yyyy} ${hour}:${minutes} UTC`;
     },
     getEventsOverTime() {
       let path = `http://${window.location.hostname}:5000/api/events-over-time?timeframe=${this.timeframe}`;
@@ -221,7 +237,9 @@ export default {
         });
     },
     onEventUpdate(event) {
-      this.selectedEvent = event;
+      if (event) {
+        this.selectedEvent = event;
+      }
     },
     onEventNameSelected(value) {
       console.log(`Event Name ${value} was selected.`);
@@ -312,13 +330,10 @@ export default {
     },
   },
   beforeDestroy() {
-    this.$store.dispatch('clearTimeout');
+    clearTimeout(this.timeout);
   },
   created() {
     this.$store.dispatch('getEvents');
-    this.$store.dispatch('setTimeout', setTimeout(() => {
-      this.$store.dispatch('getEvents');
-    }, 30000));
   },
 };
 </script>
