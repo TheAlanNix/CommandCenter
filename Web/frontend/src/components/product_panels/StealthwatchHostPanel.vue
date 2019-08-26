@@ -124,6 +124,11 @@ export default {
   },
   computed: {
     timeframe() {
+
+      // Limit Stealthwatch Flow Queries to 24 hours
+      if (this.$store.state.timeframe > 24) 
+        return 24;
+
       return this.$store.state.timeframe;
     },
   },
