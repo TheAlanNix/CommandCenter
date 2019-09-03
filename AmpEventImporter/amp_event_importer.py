@@ -80,6 +80,18 @@ def run():
         current_event_time = datetime.strptime(event["date"], "%Y-%m-%dT%H:%M:%S+00:00")
         latest_event_time = latest_event["timestamp"]
 
+        src_ip = None
+
+        # Get the first network address that isn't empty
+        for network_address in event['computer']['network_addresses']:
+            if network_address['ip']:
+                src_ip = network_address['ip']
+                break
+
+        # If no network address was found, then fall back to the external IP
+        if not src_ip:
+            src_ip = event['computer']['external_ip']
+
         if current_event_time > latest_event_time:
 
             # Make common fields for the event
@@ -87,7 +99,7 @@ def run():
                 "event_name": event["event_type"],
                 "event_details": event["detection"],
                 "product": "AMP for Endpoints",
-                "src_ip": event['computer']['network_addresses'][0]['ip'],
+                "src_ip": src_ip,
                 "timestamp": current_event_time
             }
 
