@@ -114,6 +114,6 @@
 
 <script>
 export default {
-  props: ["event"],
+  props: ['event'],
 };
 </script>

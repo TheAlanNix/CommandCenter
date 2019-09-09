@@ -4,6 +4,18 @@
       <div class="col">
         <div class="host-panel-header">
           AMP for Endpoints
+          <b-dropdown
+            id="remediation_button"
+            text="Move to Group"
+            size="sm"
+            variant="outline-danger"
+          >
+            <b-dropdown-item
+              v-for="(group, index) in ampGroups"
+              v-on:click="setAmpGroup(ampGroups[index].guid)"
+              :key="index"
+            >{{ group.name }}</b-dropdown-item>
+          </b-dropdown>
         </div>
       </div>
     </div>
@@ -95,7 +107,9 @@ import axios from 'axios';
 export default {
   data() {
     return {
+      ampConnectorGuid: null,
       ampData: null,
+      ampGroups: [],
     };
   },
   props: ['hostIp'],
@@ -111,6 +125,41 @@ export default {
         .then((res) => {
           console.log(res.data[0]);
           [this.ampData] = res.data;
+          if (this.ampData != null) {
+            this.ampConnectorGuid = this.ampData.connector_guid;
+          }
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.$store.dispatch('addError', { message: error });
+        });
+    },
+    getAmpGroups() {
+      const path = `http://${window.location.hostname}:5000/api/amp/groups`;
+      axios.get(path)
+        .then((res) => {
+          console.log(res.data);
+          this.ampGroups = res.data;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.$store.dispatch('addError', { message: error });
+        });
+    },
+    setAmpGroup(groupGuid) {
+      const path = `http://${window.location.hostname}:5000/api/amp/computer/${this.ampConnectorGuid}/group`;
+      const payload = {
+        group_guid: groupGuid,
+      };
+      axios
+        .post(path, payload)
+        .then((res) => {
+          console.log(res.data);
+          setTimeout(() => {
+            this.getAmpData();
+          }, 2000);
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -121,6 +170,13 @@ export default {
   },
   created() {
     this.getAmpData();
+    this.getAmpGroups();
   },
 };
 </script>
+
+<style lang="scss" scoped>
+#remediation_button {
+  float: right;
+}
+</style>

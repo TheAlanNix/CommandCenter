@@ -182,7 +182,7 @@ def get_events_over_time():
     return jsonify(response_object)
 
 
-# AMP Function
+# AMP Functions
 @app.route('/api/amp/computer/<ip_address>', methods=['GET'])
 def get_amp_computer(ip_address):
 
@@ -194,6 +194,41 @@ def get_amp_computer(ip_address):
     response = client.get_computers(internal_ip=ip_address)
 
     # Return a JSON formatted list of the computers
+    return jsonify(response)
+
+
+@app.route('/api/amp/computer/<connector_guid>/group', methods=['POST'])
+def set_amp_computer_group(connector_guid):
+
+    # Get the POST data from the request
+    post_data = request.get_json()
+
+    amp_data = {
+        "group_guid": post_data.get("group_guid"),
+    }
+
+    # Create an AMP API Client
+    client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
+                                  api_key=os.getenv("AMP_API_KEY"))
+
+    # Patch the computer to change the group
+    response = client.patch_computer(connector_guid=connector_guid, payload=amp_data)
+
+    # Return a JSON formatted response
+    return jsonify(response)
+
+
+@app.route('/api/amp/groups', methods=['GET'])
+def get_amp_groups():
+
+    # Create an AMP API Client
+    client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
+                                  api_key=os.getenv("AMP_API_KEY"))
+
+    # Get the groups that exist in AMP
+    response = client.get_groups()
+
+    # Return a JSON formatted list of the Groups
     return jsonify(response)
 
 

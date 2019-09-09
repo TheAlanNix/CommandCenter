@@ -52,6 +52,16 @@ class AmpClient(object):
 
         return response
 
+    def patch_computer(self, connector_guid=None, payload=None):
+        """Patch AMP Computer with the specified GUID and payload."""
+
+        # Build the Computers URL
+        url = "https://{}/v1/computers/{}".format(self.__amp_fqdn, connector_guid)
+
+        response = self._patch_request(url, payload)
+
+        return response
+
     def get_events(self, detection_sha256=None, application_sha256=None,
                    connector_guid=[], group_guid=[], start_date=None, event_type=[]):
         """Get AMP Events matching the specified criteria."""
@@ -247,6 +257,29 @@ class AmpClient(object):
 
         # Check to see if the GET was successful
         if response.status_code == 200:
+
+            if self.DEBUG:
+                print("AMP Returned Result: {}\n".format(json.dumps(response.json(), indent=4)))
+
+            # Return the JSON formatted response
+            return response.json()
+
+        else:
+            print("AMP Connection Failure.\nHTTP Return Code: {}\nResponse: {}".format(response.status_code,
+                                                                                       response.text))
+            exit()
+
+    def _patch_request(self, url=None, data=None):
+        """Performs an HTTP PATCH request."""
+
+        if self.DEBUG:
+            print("Patching URL: {}".format(url))
+
+        # Perform the GET request
+        response = requests.patch(url, data, auth=HTTPBasicAuth(self.__amp_client_id, self.__amp_api_key))
+
+        # Check to see if the GET was successful
+        if response.status_code > 200 and response.status_code < 300:
 
             if self.DEBUG:
                 print("AMP Returned Result: {}\n".format(json.dumps(response.json(), indent=4)))
