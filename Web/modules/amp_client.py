@@ -147,6 +147,38 @@ class AmpClient(object):
 
         return response
 
+    def get_isolation(self, guid=None):
+        """Get the isolation status for the specified GUID."""
+
+        if guid:
+            # Build the Isolation status URL
+            url = "https://{}/v1/computers/{}/isolation?".format(self.__amp_fqdn, guid)
+
+            # Get the Isolation data
+            response = self._get_request(url)
+
+            return response
+
+        else:
+            print("No Connector GUID was provided.")
+            return None
+
+    def options_isolation(self, guid=None):
+        """Get the isolation options that are available for the specified GUID."""
+
+        if guid:
+            # Build the Isolation options URL
+            url = "https://{}/v1/computers/{}/isolation?".format(self.__amp_fqdn, guid)
+
+            # Get the Isolation data
+            response = self._options_request(url)
+
+            return response
+
+        else:
+            print("No Connector GUID was provided.")
+            return None
+
     def get_policy(self, guid=None):
         """Get a specific AMP Policy."""
 
@@ -267,6 +299,29 @@ class AmpClient(object):
         else:
             print("AMP Connection Failure.\nHTTP Return Code: {}\nResponse: {}".format(response.status_code,
                                                                                        response.text))
+            exit()
+
+    def _options_request(self, url=None):
+        """Performs an HTTP OPTIONS request."""
+
+        if self.DEBUG:
+            print("Patching URL: {}".format(url))
+
+        # Perform the OPTIONS request
+        response = requests.options(url, auth=HTTPBasicAuth(self.__amp_client_id, self.__amp_api_key))
+
+        # Check to see if the OPTIONS was successful
+        if response.status_code > 200 and response.status_code < 300 or response.status_code == 405:
+
+            if self.DEBUG:
+                print("AMP Returned Result: {}\n".format(json.dumps(response.json(), indent=4)))
+
+            # Return the JSON formatted response
+            return response.json()
+        else:
+            print("AMP Connection Failure.\nHTTP Return Code: {}\nHeaders:{}\nResponse: {}".format(response.status_code,
+                                                                                                   response.headers,
+                                                                                                   response.text))
             exit()
 
     def _patch_request(self, url=None, data=None):

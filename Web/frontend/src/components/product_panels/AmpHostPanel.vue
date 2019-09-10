@@ -5,7 +5,7 @@
         <div class="host-panel-header">
           AMP for Endpoints
           <b-dropdown
-            id="remediation_button"
+            class="remediation-button"
             text="Move to Group"
             size="sm"
             variant="outline-danger"
@@ -16,6 +16,12 @@
               :key="index"
             >{{ group.name }}</b-dropdown-item>
           </b-dropdown>
+          <b-button
+            v-if="ampIsolationAvailable"
+            class="remediation-button"
+            size="sm"
+            variant="outline-danger"
+          >Isolate</b-button>
         </div>
       </div>
     </div>
@@ -110,12 +116,22 @@ export default {
       ampConnectorGuid: null,
       ampData: null,
       ampGroups: [],
+      ampIsolationAvailable: false,
     };
   },
   props: ['hostIp'],
   watch: {
     hostIp() {
       this.getAmpData();
+    },
+    ampData() {
+      if (this.ampData != null) {
+        this.ampConnectorGuid = this.ampData.connector_guid;
+        this.getAmpGroups();
+        this.getAmpIsolation();
+      } else {
+        this.ampConnectorGuid = null;
+      }
     },
   },
   methods: {
@@ -125,9 +141,6 @@ export default {
         .then((res) => {
           console.log(res.data[0]);
           [this.ampData] = res.data;
-          if (this.ampData != null) {
-            this.ampConnectorGuid = this.ampData.connector_guid;
-          }
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -137,10 +150,24 @@ export default {
     },
     getAmpGroups() {
       const path = `http://${window.location.hostname}:5000/api/amp/groups`;
-      axios.get(path)
+      axios
+        .get(path)
         .then((res) => {
           console.log(res.data);
           this.ampGroups = res.data;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.$store.dispatch('addError', { message: error });
+        });
+    },
+    getAmpIsolation() {
+      const path = `http://${window.location.hostname}:5000/api/amp/computer/${this.ampConnectorGuid}/isolation`;
+      axios
+        .options(path)
+        .then((res) => {
+          console.log(res.data);
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -170,13 +197,13 @@ export default {
   },
   created() {
     this.getAmpData();
-    this.getAmpGroups();
   },
 };
 </script>
 
 <style lang="scss" scoped>
-#remediation_button {
+.remediation-button {
   float: right;
+  margin-left: 5px;
 }
 </style>

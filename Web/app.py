@@ -185,6 +185,7 @@ def get_events_over_time():
 # AMP Functions
 @app.route('/api/amp/computer/<ip_address>', methods=['GET'])
 def get_amp_computer(ip_address):
+    """A function to retrieve AMP computer data and return it as JSON"""
 
     # Create an AMP API Client
     client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
@@ -199,6 +200,7 @@ def get_amp_computer(ip_address):
 
 @app.route('/api/amp/computer/<connector_guid>/group', methods=['POST'])
 def set_amp_computer_group(connector_guid):
+    """A function to set the Group for a specific AMP computer"""
 
     # Get the POST data from the request
     post_data = request.get_json()
@@ -218,8 +220,28 @@ def set_amp_computer_group(connector_guid):
     return jsonify(response)
 
 
+@app.route('/api/amp/computer/<connector_guid>/isolation', methods=['GET', 'OPTIONS'])
+def get_amp_computer_isolation(connector_guid):
+    """A function to get the AMP isolation status of a computer"""
+
+    # Create an AMP API Client
+    client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
+                                  api_key=os.getenv("AMP_API_KEY"))
+
+    if request.method == 'OPTIONS':
+        # Get the AMP Isolation options
+        response = client.options_isolation(guid=connector_guid)
+    else:
+        # Get the AMP Isolation status
+        response = client.get_isolation(guid=connector_guid)
+
+    # Return a JSON formatted response
+    return jsonify(response)
+
+
 @app.route('/api/amp/groups', methods=['GET'])
 def get_amp_groups():
+    """A function to get all groups from AMP"""
 
     # Create an AMP API Client
     client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
