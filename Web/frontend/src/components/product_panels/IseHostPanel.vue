@@ -140,6 +140,7 @@ export default {
         .get(path)
         .then((res) => {
           console.log(res);
+          if (res.status === 204) return;
           this.actions = res.data.SearchResult.resources;
         })
         .catch((error) => {
@@ -153,6 +154,7 @@ export default {
         .get(path)
         .then((res) => {
           console.log(res);
+          if (res.status === 204) return;
           this.iseData = res.data;
           if (res.data.macAddress) {
             this.macAddress = res.data.macAddress;
@@ -173,6 +175,7 @@ export default {
         .get(path)
         .then((res) => {
           console.log(res);
+          if (res.status === 204) return;
           if (res.data.policyName) {
             this.ancPolicy = res.data.policyName;
           } else {
@@ -194,6 +197,7 @@ export default {
         .post(path, payload)
         .then((res) => {
           console.log(res);
+          if (res.status === 204) return;
           this.$store.dispatch('addNotification', 'ANC Status Successfully Set');
           this.getIseAncStatus(macAddress);
         })
@@ -208,6 +212,7 @@ export default {
         .delete(path)
         .then((res) => {
           console.log(res);
+          if (res.status === 204) return;
           this.$store.dispatch('addNotification', 'ANC Status Successfully Cleared');
           this.getIseAncStatus(macAddress);
         })

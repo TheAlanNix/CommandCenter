@@ -21,7 +21,7 @@ import requests
 import xmltodict
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, make_response, render_template, request
 from flask_compress import Compress
 from flask_cors import CORS
 from modules import amp_client
@@ -32,7 +32,7 @@ from requests.auth import HTTPBasicAuth
 load_dotenv()
 
 # Configuration
-# DEBUG = False
+DEBUG = True
 PRODUCTION = bool(os.getenv('PRODUCTION'))
 
 COMPRESS_MIMETYPES = ['text/html', 'text/css', 'text/xml', 'application/json', 'application/javascript']
@@ -186,6 +186,10 @@ def get_events_over_time():
 @app.route('/api/amp/computer/<ip_address>', methods=['GET'])
 def get_amp_computer(ip_address):
 
+    # Return HTTP 204 if not configured
+    if not os.getenv("AMP_API_CLIENT_ID") or not os.getenv("AMP_API_KEY"):
+        return json_no_content()
+
     # Create an AMP API Client
     client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
                                   api_key=os.getenv("AMP_API_KEY"))
@@ -199,6 +203,10 @@ def get_amp_computer(ip_address):
 
 @app.route('/api/amp/computer/<connector_guid>/group', methods=['POST'])
 def set_amp_computer_group(connector_guid):
+
+    # Return HTTP 204 if not configured
+    if not os.getenv("AMP_API_CLIENT_ID") or not os.getenv("AMP_API_KEY"):
+        return json_no_content()
 
     # Get the POST data from the request
     post_data = request.get_json()
@@ -221,6 +229,10 @@ def set_amp_computer_group(connector_guid):
 @app.route('/api/amp/groups', methods=['GET'])
 def get_amp_groups():
 
+    # Return HTTP 204 if not configured
+    if not os.getenv("AMP_API_CLIENT_ID") or not os.getenv("AMP_API_KEY"):
+        return json_no_content()
+
     # Create an AMP API Client
     client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
                                   api_key=os.getenv("AMP_API_KEY"))
@@ -236,6 +248,14 @@ def get_amp_groups():
 @app.route('/api/stealthwatch/host-snapshot', methods=['GET'])
 def get_stealthwatch_host_snapshot():
     """A function to get host snapshots from Stealthwatch"""
+
+    # Return HTTP 204 if not configured
+    if (
+        not os.getenv("STEALTHWATCH_API_ADDRESS") or
+        not os.getenv("STEALTHWATCH_API_USERNAME") or
+        not os.getenv("STEALTHWATCH_API_PASSWORD")
+    ):
+        return json_no_content()
 
     # Build the API URL
     api_url = "https://{}/smc/swsService/hosts".format(os.getenv("STEALTHWATCH_API_ADDRESS"))
@@ -285,6 +305,14 @@ def _get_stealthwatch_host_snapshot_xml(host_ip):
 def get_stealthwatch_flows():
     """A function to get recent flows from Stealthwatch"""
 
+    # Return HTTP 204 if not configured
+    if (
+        not os.getenv("STEALTHWATCH_API_ADDRESS") or
+        not os.getenv("STEALTHWATCH_API_USERNAME") or
+        not os.getenv("STEALTHWATCH_API_PASSWORD")
+    ):
+        return json_no_content()
+
     # Build the API URL
     api_url = "https://{}/smc/swsService/flows".format(os.getenv("STEALTHWATCH_API_ADDRESS"))
 
@@ -304,8 +332,13 @@ def get_stealthwatch_flows():
     # Check to make sure the POST was successful
     if http_request.status_code == 200:
 
-        # Return JSON formatted flows
-        return jsonify(xmltodict.parse(http_request.text)['soapenc:Envelope']['soapenc:Body'])
+        response = xmltodict.parse(http_request.text)['soapenc:Envelope']['soapenc:Body']
+
+        if response['getFlowsResponse']['flow-list']:
+            # Return JSON formatted flows
+            return jsonify(response)
+        else:
+            return json_no_content()
 
     else:
         print('Stealthwatch Connection Failure - HTTP Return Code: {}\nResponse: {}'.format(http_request.status_code, http_request.text))
@@ -347,6 +380,14 @@ def _get_stealthwatch_flows_xml(duration, host_ip):
 def get_ise_actions():
     """A function to get the ANC profiles from ISE"""
 
+    # Return HTTP 204 if not configured
+    if (
+        not os.getenv("ISE_API_ADDRESS") or
+        not os.getenv("ISE_API_USERNAME") or
+        not os.getenv("ISE_API_PASSWORD")
+    ):
+        return json_no_content()
+
     api_url = "https://{}:{}@{}:9060/ers/config/ancpolicy".format(os.getenv("ISE_API_USERNAME"),
                                                                   os.getenv("ISE_API_PASSWORD"),
                                                                   os.getenv("ISE_API_ADDRESS"))
@@ -369,6 +410,13 @@ def get_ise_actions():
 @app.route('/api/ise_anc_status/<mac_address>', methods=['GET'])
 def get_ise_anc_assignment(mac_address):
     """A function to look up the ISE ANC assignment for a given MAC address"""
+
+    # Return HTTP 204 if not configured
+    if (
+        not os.getenv("ISE_API_ADDRESS") or
+        not os.getenv("ISE_PXGRID_CLIENT_NAME")
+    ):
+        return json_no_content()
 
     pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
                                              os.getenv("ISE_PXGRID_CLIENT_NAME"),
@@ -395,12 +443,19 @@ def get_ise_anc_assignment(mac_address):
     if pxgrid_response is not None:
         return jsonify(pxgrid_response)
     else:
-        return '', 204
+        return json_no_content()
 
 
 @app.route('/api/ise_anc_status', methods=['POST'])
 def set_ise_anc_assignment():
     """A function to set the ISE ANC assignment for a given MAC address"""
+
+    # Return HTTP 204 if not configured
+    if (
+        not os.getenv("ISE_API_ADDRESS") or
+        not os.getenv("ISE_PXGRID_CLIENT_NAME")
+    ):
+        return json_no_content()
 
     pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
                                              os.getenv("ISE_PXGRID_CLIENT_NAME"),
@@ -435,12 +490,19 @@ def set_ise_anc_assignment():
     if pxgrid_response is not None:
         return jsonify(pxgrid_response)
     else:
-        return '', 204
+        return json_no_content()
 
 
 @app.route('/api/ise_anc_status/<mac_address>', methods=['DELETE'])
 def clear_ise_anc_assignment(mac_address):
     """A function to clear the ISE ANC assignment for a given MAC address"""
+
+    # Return HTTP 204 if not configured
+    if (
+        not os.getenv("ISE_API_ADDRESS") or
+        not os.getenv("ISE_PXGRID_CLIENT_NAME")
+    ):
+        return json_no_content()
 
     pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
                                              os.getenv("ISE_PXGRID_CLIENT_NAME"),
@@ -467,12 +529,19 @@ def clear_ise_anc_assignment(mac_address):
     if pxgrid_response is not None:
         return jsonify(pxgrid_response)
     else:
-        return '', 204
+        return json_no_content()
 
 
 @app.route('/api/ise_session_data/<ip_address>', methods=['GET'])
 def get_ise_session_data(ip_address):
     """A function to look up the ISE session data for a given IP"""
+
+    # Return HTTP 204 if not configured
+    if (
+        not os.getenv("ISE_API_ADDRESS") or
+        not os.getenv("ISE_PXGRID_CLIENT_NAME")
+    ):
+        return json_no_content()
 
     pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
                                              os.getenv("ISE_PXGRID_CLIENT_NAME"),
@@ -499,7 +568,17 @@ def get_ise_session_data(ip_address):
     if pxgrid_response is not None:
         return jsonify(pxgrid_response)
     else:
-        return '', 204
+        return json_no_content()
+
+
+# Helpers
+def json_no_content():
+    """A function to return an HTTP 204 with empty JSON"""
+
+    response = make_response('', 204)
+    response.mimetype = flask.current_app.config['JSONIFY_MIMETYPE']
+
+    return response
 
 
 @app.route('/', defaults={'path': ''})

@@ -123,7 +123,8 @@ export default {
       const path = `http://${window.location.hostname}:5000/api/amp/computer/${this.hostIp}`;
       axios.get(path)
         .then((res) => {
-          console.log(res.data[0]);
+          console.log(res);
+          if (res.status === 204) return;
           [this.ampData] = res.data;
           if (this.ampData != null) {
             this.ampConnectorGuid = this.ampData.connector_guid;
@@ -139,7 +140,8 @@ export default {
       const path = `http://${window.location.hostname}:5000/api/amp/groups`;
       axios.get(path)
         .then((res) => {
-          console.log(res.data);
+          console.log(res);
+          if (res.status === 204) return;
           this.ampGroups = res.data;
         })
         .catch((error) => {
@@ -156,7 +158,8 @@ export default {
       axios
         .post(path, payload)
         .then((res) => {
-          console.log(res.data);
+          console.log(res);
+          if (res.status === 204) return;
           setTimeout(() => {
             this.getAmpData();
           }, 2000);

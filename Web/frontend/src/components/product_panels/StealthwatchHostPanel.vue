@@ -11,16 +11,19 @@
     <div class="row">
       <div class="col">
         <div class="host-panel-content">
-          <VisNetwork
-            id="network-view"
-            ref="network"
-            :edges="edges"
-            :nodes="nodes"
-            :options="options"
-            :events="['stabilized']"
-            @stabilized="onGraphStabilized"
-            style="height: 45vh"
-          ></VisNetwork>
+          <span v-if="flows.length > 0 || flowsLoading">
+            <VisNetwork
+              id="network-view"
+              ref="network"
+              :edges="edges"
+              :nodes="nodes"
+              :options="options"
+              :events="['stabilized']"
+              @stabilized="onGraphStabilized"
+              style="height: 60vh"
+            ></VisNetwork>
+          </span>
+          <div v-else class="text-center">No Flow Data</div>
         </div>
       </div>
     </div>
@@ -137,11 +140,14 @@ export default {
       axios
         .get(path)
         .then((res) => {
-          this.flows = res.data.getFlowsResponse['flow-list'].flow;
+          console.log(res);
           this.flowsLoading = false;
+          if (res.status === 204) return;
+          this.flows = res.data.getFlowsResponse['flow-list'].flow;
         })
         .catch((error) => {
           // eslint-disable-next-line
+          this.flowsLoading = false;
           console.error(error);
           this.$store.dispatch('addError', { message: error });
         });
@@ -151,6 +157,7 @@ export default {
       axios
         .get(path)
         .then((res) => {
+          console.log(res);
           this.hostSnapshot = res.data.getHostSnapshotResponse['host-snapshot'];
         })
         .catch((error) => {
@@ -164,24 +171,13 @@ export default {
       this.edges = [];
       this.nodes = [];
 
-      const edges = [];
-
       // Rip through each flow and add our edges and nodes
       this.flows.forEach((flow) => {
-        const serverNodeId = this.processNode(flow.server);
-        const clientNodeId = this.processNode(flow.client);
+        this.processNode(flow.server);
+        this.processNode(flow.client);
 
-        if (!edges.includes(clientNodeId + serverNodeId)) {
-          edges.push(clientNodeId + serverNodeId);
-          this.edges.push({
-            from: clientNodeId,
-            to: serverNodeId,
-            arrows: 'to',
-          });
-        }
+        this.processEdge(flow);
       });
-
-      console.log(this.nodes);
     },
     processNode(node) {
       // Get the node ID / IP
@@ -234,13 +230,48 @@ export default {
 
       return hostId;
     },
-    // processEdge(edge) {
-    //   // Get the edge IDs
-    //   const clientId = edge.client['@ip-address'];
-    //   const serverId = edge.server['@ip-address'];
-    //   // Get the service
-    //   const service = edge['@service'];
-    // },
+    processEdge(edge) {
+      let clientId = edge.client['@country'];
+      let serverId = edge.server['@country'];
+
+      // Calculate a Client ID
+      if (['XR', 'XU', 'XL'].includes(clientId)) {
+        clientId = edge.client['@ip-address'];
+      }
+
+      // Calculate a Server ID
+      if (['XR', 'XU', 'XL'].includes(serverId)) {
+        serverId = edge.server['@ip-address'];
+      }
+
+      // Get the total bytes for the flow
+      const totalBytes = edge['@total-bytes'];
+
+      let edgeExists = false;
+      const unidirectional = (edge.client['@bytes'] === '0') || (edge.server['@bytes'] === '0');
+
+      // Check to see if we need to update an edge
+      this.edges.forEach((currentEdge) => {
+        if (currentEdge.id === clientId + serverId) {
+          edgeExists = true;
+          currentEdge = {
+            dashes: !currentEdge.dashes || !unidirectional,
+            value: currentEdge.value + totalBytes,
+          };
+        }
+      });
+
+      if (!edgeExists) {
+        this.edges.push({
+          id: clientId + serverId,
+          from: clientId,
+          to: serverId,
+          dashes: unidirectional,
+          arrows: 'to',
+          value: totalBytes,
+        });
+      }
+    },
     onGraphStabilized() {
       this.$refs.network.fit({ animation: true });
     },
