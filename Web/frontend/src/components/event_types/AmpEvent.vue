@@ -47,8 +47,7 @@
       <b-col>
         <span class="content">
           {{ event.src_ip }}
-          (
-          <router-link :to="'/host/' + event.src_ip">Examine Host</router-link>)
+          (<router-link :to="'/host/' + event.src_ip">Examine Host</router-link>)
         </span>
       </b-col>
     </b-row>
