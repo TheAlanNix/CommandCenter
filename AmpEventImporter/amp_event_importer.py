@@ -20,15 +20,16 @@ load_dotenv()
 
 
 def get_events(start_date=None):
-    """Get AMP events"""
+    """Get AMP events from the specified start date."""
 
     # Format the date for AMP
     start_date = start_date.isoformat()
 
     # Build the API URL
-    api_url = "https://{}/v1/events?start_date={}&event_type[]=1090519054&event_type[]=553648147&event_type[]=553648168&event_type[]=1090519084".format(os.getenv("AMP_API_FQDN"), start_date)
+    api_url = f"https://{os.getenv('AMP_API_FQDN')}/v1/events?start_date={start_date}" \
+              f"&event_type[]=1090519054&event_type[]=553648147&event_type[]=553648168&event_type[]=1090519084"
 
-    print("Fetching {}".format(api_url))
+    print(f"Fetching {api_url}")
 
     # Get AMP Events
     http_request = requests.get(api_url, auth=HTTPBasicAuth(os.getenv("AMP_API_CLIENT_ID"), os.getenv("AMP_API_KEY")))
@@ -37,7 +38,7 @@ def get_events(start_date=None):
     if http_request.status_code == 200:
         return http_request.json()
     else:
-        print('AMP Connection Failure - HTTP Return Code: {}\nResponse: {}'.format(http_request.status_code, http_request.text))
+        print(f"AMP Connection Failure - HTTP Return Code: {http_request.status_code}\nResponse: {http_request.text}")
         exit(1)
 
 
@@ -45,7 +46,7 @@ def run():
     """Main function to get new AMP events and commit them to the MongoDB database"""
 
     # Connect to the MongoDB instance
-    db_client = pymongo.MongoClient("mongodb://{}/".format(os.getenv("MONGO_INITDB_ADDRESS")),
+    db_client = pymongo.MongoClient(f"mongodb://{os.getenv('MONGO_INITDB_ADDRESS')}/",
                                     username=os.getenv("MONGO_INITDB_ROOT_USERNAME"),
                                     password=os.getenv("MONGO_INITDB_ROOT_PASSWORD"))
 
@@ -53,12 +54,12 @@ def run():
     command_center_db = db_client[os.getenv("MONGO_INITDB_DATABASE")]
 
     # Use the 'events' collection from the specified database
-    command_center_events = command_center_db['events']
+    command_center_events = command_center_db["events"]
 
     # Get the count of AMP for Endpoints documents
     event_count = command_center_events.count_documents({"product": "AMP for Endpoints"})
 
-    # If there's no latest event, the Event collection is empty, so we create a timestamp to import from.
+    # If we have previous events, import from that point in time, otherwise, import the last 30 days
     if event_count:
 
         # Get the latest 'AMP for Endpoints' event
@@ -69,13 +70,13 @@ def run():
         start_date = datetime.utcnow().replace(microsecond=0) + timedelta(-30)
         latest_event = {"timestamp": start_date}
 
-    print("Latest AMP Event: ", latest_event['timestamp'])
+    print("Latest AMP Event: ", latest_event["timestamp"])
 
     # Get the latest AMP events
-    amp_events = get_events(latest_event['timestamp'])
+    amp_events = get_events(latest_event["timestamp"])
 
     # Iterate through all fetched events
-    for event in amp_events['data']:
+    for event in amp_events["data"]:
 
         current_event_time = datetime.strptime(event["date"], "%Y-%m-%dT%H:%M:%S+00:00")
         latest_event_time = latest_event["timestamp"]
@@ -83,14 +84,14 @@ def run():
         src_ip = None
 
         # Get the first network address that isn't empty
-        for network_address in event['computer']['network_addresses']:
-            if network_address['ip']:
-                src_ip = network_address['ip']
+        for network_address in event["computer"]["network_addresses"]:
+            if network_address["ip"]:
+                src_ip = network_address["ip"]
                 break
 
-        # If no network address was found, then fall back to the external IP
+        # If no internal network address was found, then fall back to the external IP
         if not src_ip:
-            src_ip = event['computer']['external_ip']
+            src_ip = event["computer"]["external_ip"]
 
         if current_event_time > latest_event_time:
 

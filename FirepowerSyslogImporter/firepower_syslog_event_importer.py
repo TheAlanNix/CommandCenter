@@ -56,7 +56,7 @@ class FirepowerSyslogHandler():
                 "snort_id": parsed_event.group(3),
                 "snort_name": parsed_event.group(4),
                 "event_name": parsed_event.group(4),
-                "event_details": "{} event {} was detected by '{}'.".format(parsed_event.group(8), parsed_event.group(4), parsed_event.group(6)),
+                "event_details": f"{parsed_event.group(8)} event {parsed_event.group(4)} was detected by '{parsed_event.group(6)}'.",
                 "impact_level": parsed_event.group(5),
                 "sensor_name": parsed_event.group(6),
                 "timestamp": datetime.strptime(parsed_event.group(7), "%a %b %d %H:%M:%S %Y %Z"),
@@ -82,20 +82,20 @@ class FirepowerSyslogHandler():
         """
 
         # Connect to the MongoDB instance
-        db_client = pymongo.MongoClient("mongodb://{}/".format(self.__db_address),
+        db_client = pymongo.MongoClient(f"mongodb://{self.__db_address}/",
                                         username=self.__db_username,
                                         password=self.__db_password)
 
         # Use the 'commandcenter' database
-        command_center_db = db_client['commandcenter']
+        command_center_db = db_client["commandcenter"]
 
         # Use the 'events' collection from the 'commandcenter' database
-        command_center_events = command_center_db['events']
+        command_center_events = command_center_db["events"]
 
         # Store the event in the database
         db_record = command_center_events.insert_one(event_json)
 
-        print("Inserted Firepower event at MongoDB ID {}".format(db_record.inserted_id))
+        print(f"Inserted Firepower event at MongoDB ID {db_record.inserted_id}")
 
 
 class SyslogHandler(socketserver.BaseRequestHandler):
@@ -111,7 +111,7 @@ class SyslogHandler(socketserver.BaseRequestHandler):
         self.data = bytes.decode(self.request[0].strip())
         self.socket = self.request[1]
 
-        print("{} sent the following: {}".format(self.client_address[0], self.data))
+        print(f"{self.client_address[0]} sent the following: {self.data}")
 
         event_parser = FirepowerSyslogHandler()
 
@@ -128,7 +128,7 @@ class SyslogHandler(socketserver.BaseRequestHandler):
 if __name__ == "__main__":
 
     try:
-        server = socketserver.UDPServer(('0.0.0.0', 4514), SyslogHandler)
+        server = socketserver.UDPServer(("0.0.0.0", 4514), SyslogHandler)
         server.serve_forever()
     except (IOError, SystemExit):
         raise

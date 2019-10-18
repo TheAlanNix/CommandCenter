@@ -20,15 +20,15 @@ load_dotenv()
 
 
 def get_events(start_date=None):
-    """Get Umbrella events"""
+    """Get Umbrella events from the specified start date."""
 
     # Format the date for AMP
     start_date = int(start_date.replace(tzinfo=timezone.utc).timestamp())
 
     # Build the API URL
-    api_url = "https://reports.api.umbrella.com/v1/organizations/{}/security-activity?limit=500&start={}".format(os.getenv("UMBRELLA_API_ORG_ID"), start_date)
+    api_url = f"https://reports.api.umbrella.com/v1/organizations/{os.getenv('UMBRELLA_API_ORG_ID')}/security-activity?limit=500&start={start_date}"
 
-    print("Fetching {}".format(api_url))
+    print(f"Fetching {api_url}")
 
     # Get Umbrella Events
     http_request = requests.get(api_url, auth=HTTPBasicAuth(os.getenv("UMBRELLA_API_REPORTING_KEY"), os.getenv("UMBRELLA_API_REPORTING_SECRET")))
@@ -37,7 +37,7 @@ def get_events(start_date=None):
     if http_request.status_code == 200:
         return http_request.json()
     else:
-        print('Umbrella Connection Failure - HTTP Return Code: {}\nResponse: {}'.format(http_request.status_code, http_request.text))
+        print(f"Umbrella Connection Failure - HTTP Return Code: {http_request.status_code}\nResponse: {http_request.text}")
         exit(1)
 
 
@@ -45,7 +45,7 @@ def run():
     """Main function to get new Umbrella events and commit them to the MongoDB database"""
 
     # Connect to the MongoDB instance
-    db_client = pymongo.MongoClient("mongodb://{}/".format(os.getenv("MONGO_INITDB_ADDRESS")),
+    db_client = pymongo.MongoClient(f"mongodb://{os.getenv('MONGO_INITDB_ADDRESS')}/",
                                     username=os.getenv("MONGO_INITDB_ROOT_USERNAME"),
                                     password=os.getenv("MONGO_INITDB_ROOT_PASSWORD"))
 
@@ -53,12 +53,12 @@ def run():
     command_center_db = db_client[os.getenv("MONGO_INITDB_DATABASE")]
 
     # Use the 'events' collection from the specified database
-    command_center_events = command_center_db['events']
+    command_center_events = command_center_db["events"]
 
     # Get the count of Umbrella documents
     event_count = command_center_events.count_documents({"product": "Umbrella"})
 
-    # If there are no events, the Event collection is empty, so we create a timestamp to import from.
+    # If we have previous events, import from that point in time, otherwise, import the last day
     if event_count:
 
         # Get the latest 'Umbrella' event
@@ -69,13 +69,13 @@ def run():
         start_date = datetime.utcnow().replace(microsecond=0) + timedelta(hours=-24)
         latest_event = {"timestamp": start_date}
 
-    print("Latest Umbrella Event: ", latest_event['timestamp'])
+    print("Latest Umbrella Event: ", latest_event["timestamp"])
 
     # Get the latest Umbrella events
-    umbrella_events = get_events(latest_event['timestamp'])
+    umbrella_events = get_events(latest_event["timestamp"])
 
     # Iterate through all fetched events
-    for event in umbrella_events['requests']:
+    for event in umbrella_events["requests"]:
 
         current_event_time = datetime.strptime(event["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ")
         latest_event_time = latest_event["timestamp"]
@@ -89,8 +89,8 @@ def run():
 
             # Make common fields for the event
             event_common_fields = {
-                "event_name": "Umbrella {} Destination".format(event["actionTaken"]),
-                "event_details": "Umbrella {} the following destination: {}".format(event["actionTaken"], event["destination"]),
+                "event_name": f"Umbrella {event['actionTaken']} Destination",
+                "event_details": f"Umbrella {event['actionTaken']} the following destination: {event['destination']}",
                 "product": "Umbrella",
                 "src_ip": src_ip,
                 "timestamp": current_event_time

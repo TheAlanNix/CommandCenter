@@ -34,7 +34,7 @@ def login():
     print("Logging in to Stealthwatch...")
 
     # Set the URL for SMC login
-    url = "https://{}/token/v2/authenticate".format(os.getenv("STEALTHWATCH_API_ADDRESS"))
+    url = f"https://{os.getenv('STEALTHWATCH_API_ADDRESS')}/token/v2/authenticate"
 
     # Create the login request data
     login_request_data = {
@@ -46,7 +46,7 @@ def login():
     response = API_SESSION.request("POST", url, verify=False, data=login_request_data)
 
     if (response.status_code != 200):
-        print("An error has ocurred, while logging in, with the following code {}".format(response.status_code))
+        print(f"An error has ocurred, while logging in, with the following code {response.status_code}")
         exit(1)
 
 
@@ -55,14 +55,14 @@ def get_event_names():
 
     print("Getting Stealthwatch event names...")
 
-    # Set the URL for getting the Security Events
-    url = "https://{}/sw-reporting/v1/tenants/{}/security-events/templates".format(os.getenv("STEALTHWATCH_API_ADDRESS"),
-                                                                                   os.getenv("STEALTHWATCH_API_TENANT"))
+    # Set the URL for getting the Security Events Templates
+    url = f"https://{os.getenv('STEALTHWATCH_API_ADDRESS')}/sw-reporting/v1/tenants/{os.getenv('STEALTHWATCH_API_TENANT')}" \
+           "/security-events/templates"
 
     # Build the request headers
     request_headers = {"Content-type": "application/json", "Accept": "application/json"}
 
-    # Perform the query to initiate the search
+    # Perform the Get request
     response = API_SESSION.request("GET", url, verify=False, headers=request_headers)
 
     # If successful
@@ -80,7 +80,7 @@ def get_event_names():
 
         return return_dict
     else:
-        print("An error has occured while fetching event names.  HTTP Code: {}".format(response.status_code))
+        print(f"An error has occured while fetching event names.  HTTP Code: {response.status_code}")
         exit(1)
 
 
@@ -88,8 +88,8 @@ def get_events(start_date=None):
     """Get Stealthwatch Events"""
 
     # Set the URL for the query to POST the filter and initiate the search
-    url = "https://{}/sw-reporting/v1/tenants/{}/security-events/queries".format(os.getenv("STEALTHWATCH_API_ADDRESS"),
-                                                                                 os.getenv("STEALTHWATCH_API_TENANT"))
+    url = f"https://{os.getenv('STEALTHWATCH_API_ADDRESS')}/sw-reporting/v1/tenants/{os.getenv('STEALTHWATCH_API_TENANT')}" \
+           "/security-events/queries"
 
     # Set the current time as the end
     end_datetime = datetime.utcnow()
@@ -131,13 +131,13 @@ def get_events(start_date=None):
         while search["percentComplete"] != 100.0:
             response = API_SESSION.request("GET", url, verify=False)
             search = json.loads(response.content)["data"]
-            print("{}% Complete...".format(search["percentComplete"]))
+            print(f"{search['percentComplete']}% Complete...")
             time.sleep(1)
 
         # Set the URL to check the search results and get them
-        url = "https://{}/sw-reporting/v1/tenants/{}/security-events/results/{}".format(os.getenv("STEALTHWATCH_API_ADDRESS"),
-                                                                                        os.getenv("STEALTHWATCH_API_TENANT"),
-                                                                                        search_id)
+        url = f"https://{os.getenv('STEALTHWATCH_API_ADDRESS')}/sw-reporting/v1/tenants/{os.getenv('STEALTHWATCH_API_TENANT')}" \
+              f"/security-events/results/{search_id}"
+
         response = API_SESSION.request("GET", url, verify=False)
 
         # Return the results
@@ -145,7 +145,7 @@ def get_events(start_date=None):
 
     # If unable to update the IPs for a given tag (host group)
     else:
-        print("An error has ocurred, while getting security events, with the following code {}".format(response.status_code))
+        print(f"An error has ocurred, while getting security events, with the following code {response.status_code}")
         exit(1)
 
 
@@ -165,7 +165,7 @@ def run():
     """Main function to get new Stealthwatch events and commit them to the MongoDB database"""
 
     # Connect to the MongoDB instance
-    db_client = pymongo.MongoClient("mongodb://{}/".format(os.getenv("MONGO_INITDB_ADDRESS")),
+    db_client = pymongo.MongoClient(f"mongodb://{os.getenv('MONGO_INITDB_ADDRESS')}/",
                                     username=os.getenv("MONGO_INITDB_ROOT_USERNAME"),
                                     password=os.getenv("MONGO_INITDB_ROOT_PASSWORD"))
 
@@ -222,7 +222,7 @@ def run():
             # Print a logging message
             if existing_event:
                 event_exists = True
-                print("Found that the event already exists: {}".format(event["id"]))
+                print(f"Found that the event already exists: {event['id']}")
 
         current_event_time = datetime.strptime(event["lastActiveTime"], "%Y-%m-%dT%H:%M:%S.%f+0000")
         latest_event_time = latest_event["timestamp"]
@@ -246,14 +246,14 @@ def run():
                 # Update the event in the database
                 x = command_center_events.replace_one({"_id": existing_event["_id"]}, event)
 
-                print("Updated Stealthwatch Event ID {} at MongoDB ID {}".format(event["id"], x.inserted_id))
+                print(f"Updated Stealthwatch Event ID {event['id']} at MongoDB ID {x.inserted_id}")
 
             else:
 
                 # Store the event in the database
                 x = command_center_events.insert_one(event)
 
-                print("Inserted Stealthwatch Event ID {} at MongoDB ID {}".format(event["id"], x.inserted_id))
+                print(f"Inserted Stealthwatch Event ID {event['id']} at MongoDB ID {x.inserted_id}")
 
 ###################
 # !!! DO WORK !!! #

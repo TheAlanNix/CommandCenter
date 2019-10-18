@@ -12,25 +12,27 @@
           <span class="badge badge-primary">{{ eventCount }}</span>
         </router-link>
       </li>
+      <!--
       <li>
         <router-link to="/hosts">
           <i class="fa fa-desktop" aria-hidden="true"></i>
           Hosts
         </router-link>
       </li>
-        <!--<li>
-          <a href="/threat">
-            <i class="fa fa-crosshairs" aria-hidden="true"></i>
-            Top Threats
-          </a>
-        </li>-->
-      </ul>
-      <!--
-      <router-link id="settings" to="settings">
-          <i class="fa fa-cogs"></i> Settings
-      </router-link>
+      <li>
+        <a href="/threat">
+          <i class="fa fa-crosshairs" aria-hidden="true"></i>
+          Top Threats
+        </a>
+      </li>
       -->
-    </div>
+    </ul>
+    <!--
+    <router-link id="settings" to="settings">
+        <i class="fa fa-cogs"></i> Settings
+    </router-link>
+    -->
+  </div>
 </template>
 
 <script>
