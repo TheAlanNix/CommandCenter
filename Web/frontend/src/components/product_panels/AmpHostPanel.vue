@@ -17,7 +17,17 @@
             >{{ group.name }}</b-dropdown-item>
           </b-dropdown>
           <b-button
-            v-if="ampIsolationAvailable"
+            v-if="ampIsolationAvailable
+                  && (ampIsolationStatus == 'isolated' || ampIsolationStatus == 'pending_start')"
+            v-on:click="deleteAmpIsolation()"
+            class="remediation-button"
+            size="sm"
+            variant="outline-success"
+          >Un-Isolate</b-button>
+          <b-button
+            v-if="ampIsolationAvailable
+                  && (ampIsolationStatus == 'not_isolated' || ampIsolationStatus == 'pending_stop')"
+            v-on:click="putAmpIsolation()"
             class="remediation-button"
             size="sm"
             variant="outline-danger"
@@ -117,6 +127,7 @@ export default {
       ampData: null,
       ampGroups: [],
       ampIsolationAvailable: false,
+      ampIsolationStatus: null,
     };
   },
   props: ['hostIp'],
@@ -128,7 +139,6 @@ export default {
       if (this.ampData != null) {
         this.ampConnectorGuid = this.ampData.connector_guid;
         this.getAmpGroups();
-        this.getAmpIsolation();
       } else {
         this.ampConnectorGuid = null;
       }
@@ -142,6 +152,8 @@ export default {
           console.log(res);
           if (res.status === 204) return;
           [this.ampData] = res.data;
+          this.ampIsolationAvailable = this.ampData.isolation.available;
+          this.ampIsolationStatus = this.ampData.isolation.status;
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -164,12 +176,19 @@ export default {
           this.$store.dispatch('addError', { message: error });
         });
     },
-    getAmpIsolation() {
-      const path = `http://${window.location.hostname}:5000/api/amp/computer/${this.ampConnectorGuid}/isolation`;
+    setAmpGroup(groupGuid) {
+      const path = `http://${window.location.hostname}:5000/api/amp/computer/${this.ampConnectorGuid}/group`;
+      const data = {
+        group_guid: groupGuid,
+      };
       axios
-        .options(path)
+        .post(path, data)
         .then((res) => {
-          console.log(res.data);
+          console.log(res);
+          if (res.status === 204) return;
+          setTimeout(() => {
+            this.getAmpData();
+          }, 2000);
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -177,19 +196,40 @@ export default {
           this.$store.dispatch('addError', { message: error });
         });
     },
-    setAmpGroup(groupGuid) {
-      const path = `http://${window.location.hostname}:5000/api/amp/computer/${this.ampConnectorGuid}/group`;
-      const payload = {
-        group_guid: groupGuid,
+    putAmpIsolation() {
+      const path = `http://${window.location.hostname}:5000/api/amp/computer/${this.ampConnectorGuid}/isolation`;
+      const data = {
+        comment: 'This host has been isolated by Command Center.',
+        unlock_code: 'commandcenter',
       };
       axios
-        .post(path, payload)
+        .put(path, data)
         .then((res) => {
           console.log(res);
-          if (res.status === 204) return;
-          setTimeout(() => {
+          if (res.status === 200) {
+            this.$store.dispatch('addNotification', 'AMP Isolation Status Successfully Set');
             this.getAmpData();
-          }, 2000);
+          }
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.$store.dispatch('addError', { message: error });
+        });
+    },
+    deleteAmpIsolation() {
+      const path = `http://${window.location.hostname}:5000/api/amp/computer/${this.ampConnectorGuid}/isolation`;
+      const data = {
+        comment: 'This host has been un-isolated by Command Center.',
+      };
+      axios
+        .delete(path, data)
+        .then((res) => {
+          console.log(res);
+          if (res.status === 200) {
+            this.$store.dispatch('addNotification', 'AMP Isolation Status Successfully Deleted');
+            this.getAmpData();
+          }
         })
         .catch((error) => {
           // eslint-disable-next-line

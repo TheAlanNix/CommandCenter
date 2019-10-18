@@ -52,13 +52,13 @@ class AmpClient(object):
 
         return response
 
-    def patch_computer(self, connector_guid=None, payload=None):
+    def patch_computer(self, connector_guid=None, data=None):
         """Patch AMP Computer with the specified GUID and payload."""
 
         # Build the Computers URL
         url = "https://{}/v1/computers/{}".format(self.__amp_fqdn, connector_guid)
 
-        response = self._patch_request(url, payload)
+        response = self._patch_request(url, data)
 
         return response
 
@@ -163,6 +163,25 @@ class AmpClient(object):
             print("No Connector GUID was provided.")
             return None
 
+    def delete_isolation(self, guid=None, data=None):
+        """Delete the isolation status for the specified GUID."""
+
+        if guid:
+            # Build the Isolation status URL
+            url = "https://{}/v1/computers/{}/isolation?".format(self.__amp_fqdn, guid)
+
+            if data:
+                # Delete the Isolation data
+                response = self._delete_request(url, data)
+            else:
+                response = self._delete_request(url)
+
+            return response
+
+        else:
+            print("No Connector GUID was provided.")
+            return None
+
     def options_isolation(self, guid=None):
         """Get the isolation options that are available for the specified GUID."""
 
@@ -172,6 +191,22 @@ class AmpClient(object):
 
             # Get the Isolation data
             response = self._options_request(url)
+
+            return response
+
+        else:
+            print("No Connector GUID was provided.")
+            return None
+    
+    def put_isolation(self, guid=None, data=None):
+        """Put an isolation request for the specified GUID."""
+
+        if guid:
+            # Build the Isolation options URL
+            url = "https://{}/v1/computers/{}/isolation?".format(self.__amp_fqdn, guid)
+
+            # Get the Isolation data
+            response = self._put_request(url, data)
 
             return response
 
@@ -278,17 +313,17 @@ class AmpClient(object):
 
         return return_data
 
-    def _get_request(self, url=None):
-        """Performs an HTTP GET request."""
+    def _delete_request(self, url=None, data=None):
+        """Performs an HTTP DELETE request."""
 
         if self.DEBUG:
-            print("Fetching URL: {}".format(url))
+            print("Delete URL: {}".format(url))
 
-        # Perform the GET request
-        response = requests.get(url, auth=HTTPBasicAuth(self.__amp_client_id, self.__amp_api_key))
+        # Perform the DELETE request
+        response = requests.delete(url, data=data, auth=HTTPBasicAuth(self.__amp_client_id, self.__amp_api_key))
 
-        # Check to see if the GET was successful
-        if response.status_code == 200:
+        # Check to see if the DELETE was successful
+        if response.status_code >= 200 and response.status_code < 300:
 
             if self.DEBUG:
                 print("AMP Returned Result: {}\n".format(json.dumps(response.json(), indent=4)))
@@ -299,19 +334,42 @@ class AmpClient(object):
         else:
             print("AMP Connection Failure.\nHTTP Return Code: {}\nResponse: {}".format(response.status_code,
                                                                                        response.text))
-            exit()
+            return None
+
+    def _get_request(self, url=None):
+        """Performs an HTTP GET request."""
+
+        if self.DEBUG:
+            print("Get URL: {}".format(url))
+
+        # Perform the GET request
+        response = requests.get(url, auth=HTTPBasicAuth(self.__amp_client_id, self.__amp_api_key))
+
+        # Check to see if the GET was successful
+        if response.status_code >= 200 and response.status_code < 300:
+
+            if self.DEBUG:
+                print("AMP Returned Result: {}\n".format(json.dumps(response.json(), indent=4)))
+
+            # Return the JSON formatted response
+            return response.json()
+
+        else:
+            print("AMP Connection Failure.\nHTTP Return Code: {}\nResponse: {}".format(response.status_code,
+                                                                                       response.text))
+            return None
 
     def _options_request(self, url=None):
         """Performs an HTTP OPTIONS request."""
 
         if self.DEBUG:
-            print("Patching URL: {}".format(url))
+            print("Option URL: {}".format(url))
 
         # Perform the OPTIONS request
         response = requests.options(url, auth=HTTPBasicAuth(self.__amp_client_id, self.__amp_api_key))
 
         # Check to see if the OPTIONS was successful
-        if response.status_code > 200 and response.status_code < 300 or response.status_code == 405:
+        if response.status_code >= 200 and response.status_code < 300:
 
             if self.DEBUG:
                 print("AMP Returned Result: {}\n".format(json.dumps(response.json(), indent=4)))
@@ -322,19 +380,19 @@ class AmpClient(object):
             print("AMP Connection Failure.\nHTTP Return Code: {}\nHeaders:{}\nResponse: {}".format(response.status_code,
                                                                                                    response.headers,
                                                                                                    response.text))
-            exit()
+            return None
 
     def _patch_request(self, url=None, data=None):
         """Performs an HTTP PATCH request."""
 
         if self.DEBUG:
-            print("Patching URL: {}".format(url))
+            print("Patch URL: {}".format(url))
 
-        # Perform the GET request
+        # Perform the PATCH request
         response = requests.patch(url, data, auth=HTTPBasicAuth(self.__amp_client_id, self.__amp_api_key))
 
-        # Check to see if the GET was successful
-        if response.status_code > 200 and response.status_code < 300:
+        # Check to see if the PATCH was successful
+        if response.status_code >= 200 and response.status_code < 300:
 
             if self.DEBUG:
                 print("AMP Returned Result: {}\n".format(json.dumps(response.json(), indent=4)))
@@ -346,3 +404,26 @@ class AmpClient(object):
             print("AMP Connection Failure.\nHTTP Return Code: {}\nResponse: {}".format(response.status_code,
                                                                                        response.text))
             exit()
+
+    def _put_request(self, url=None, data=None):
+        """Performs an HTTP PUT request."""
+
+        if self.DEBUG:
+            print("Put URL: {}".format(url))
+
+        # Perform the PUT request
+        response = requests.put(url, data, auth=HTTPBasicAuth(self.__amp_client_id, self.__amp_api_key))
+
+        # Check to see if the PUT was successful
+        if response.status_code >= 200 and response.status_code < 300:
+
+            if self.DEBUG:
+                print("AMP Returned Result: {}\n".format(json.dumps(response.json(), indent=4)))
+
+            # Return the JSON formatted response
+            return response.json()
+
+        else:
+            print("AMP Connection Failure.\nHTTP Return Code: {}\nResponse: {}".format(response.status_code,
+                                                                                       response.text))
+            return None

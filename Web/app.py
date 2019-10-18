@@ -32,8 +32,12 @@ from requests.auth import HTTPBasicAuth
 load_dotenv()
 
 # Configuration
-DEBUG = True
-PRODUCTION = bool(os.getenv('PRODUCTION'))
+if os.getenv('PRODUCTION') == "True":
+    ENV = 'production'
+else:
+    ENV = 'development'
+    DEBUG = True
+    TESTING = True
 
 COMPRESS_MIMETYPES = ['text/html', 'text/css', 'text/xml', 'application/json', 'application/javascript']
 COMPRESS_LEVEL = 6
@@ -210,38 +214,12 @@ def set_amp_computer_group(connector_guid):
     if not os.getenv("AMP_API_CLIENT_ID") or not os.getenv("AMP_API_KEY"):
         return json_no_content()
 
-    # Get the POST data from the request
-    post_data = request.get_json()
-
-    amp_data = {
-        "group_guid": post_data.get("group_guid"),
-    }
-
     # Create an AMP API Client
     client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
                                   api_key=os.getenv("AMP_API_KEY"))
 
     # Patch the computer to change the group
-    response = client.patch_computer(connector_guid=connector_guid, payload=amp_data)
-
-    # Return a JSON formatted response
-    return jsonify(response)
-
-
-@app.route('/api/amp/computer/<connector_guid>/isolation', methods=['GET', 'OPTIONS'])
-def get_amp_computer_isolation(connector_guid):
-    """A function to get the AMP isolation status of a computer"""
-
-    # Create an AMP API Client
-    client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
-                                  api_key=os.getenv("AMP_API_KEY"))
-
-    if request.method == 'OPTIONS':
-        # Get the AMP Isolation options
-        response = client.options_isolation(guid=connector_guid)
-    else:
-        # Get the AMP Isolation status
-        response = client.get_isolation(guid=connector_guid)
+    response = client.patch_computer(connector_guid=connector_guid, data=request.get_json())
 
     # Return a JSON formatted response
     return jsonify(response)
@@ -264,6 +242,60 @@ def get_amp_groups():
 
     # Return a JSON formatted list of the Groups
     return jsonify(response)
+
+
+@app.route('/api/amp/computer/<connector_guid>/isolation', methods=['GET'])
+def get_amp_computer_isolation(connector_guid):
+    """A function to get the AMP isolation status of a computer"""
+
+    # Create an AMP API Client
+    client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
+                                  api_key=os.getenv("AMP_API_KEY"))
+
+    # Get the AMP Isolation status
+    response = client.get_isolation(guid=connector_guid)
+
+    if response:
+        # Return a JSON formatted response
+        return jsonify(response)
+    else:
+        return json_no_content()
+
+
+@app.route('/api/amp/computer/<connector_guid>/isolation', methods=['DELETE'])
+def delete_amp_computer_isolation(connector_guid):
+    """A function to delete the AMP isolation status of a computer"""
+
+    # Create an AMP API Client
+    client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
+                                  api_key=os.getenv("AMP_API_KEY"))
+
+    # Delete the AMP Isolation status
+    response = client.delete_isolation(guid=connector_guid, data=request.get_json())
+
+    if response:
+        # Return a JSON formatted response
+        return jsonify(response)
+    else:
+        return json_no_content()
+
+
+@app.route('/api/amp/computer/<connector_guid>/isolation', methods=['PUT'])
+def put_amp_computer_isolation(connector_guid):
+    """A function to put the AMP isolation status of a computer"""
+
+    # Create an AMP API Client
+    client = amp_client.AmpClient(client_id=os.getenv("AMP_API_CLIENT_ID"),
+                                  api_key=os.getenv("AMP_API_KEY"))
+
+    # Put the AMP Isolation status
+    response = client.put_isolation(guid=connector_guid, data=request.get_json())
+
+    if response:
+        # Return a JSON formatted response
+        return jsonify(response)
+    else:
+        return json_no_content()
 
 
 # Stealthwatch Functions
@@ -442,8 +474,8 @@ def get_ise_anc_assignment(mac_address):
 
     pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
                                              os.getenv("ISE_PXGRID_CLIENT_NAME"),
-                                             "/app/pxGrid_cert.pem",
-                                             "/app/pxGrid_key.pem")
+                                             os.getenv("ISE_PXGRID_CERT_PATH"),
+                                             os.getenv("ISE_PXGRID_KEY_PATH"))
 
     # Check to see if the account is enabled
     if pxgrid.account_activate()['accountState'] != 'ENABLED':
@@ -481,8 +513,8 @@ def set_ise_anc_assignment():
 
     pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
                                              os.getenv("ISE_PXGRID_CLIENT_NAME"),
-                                             "/app/pxGrid_cert.pem",
-                                             "/app/pxGrid_key.pem")
+                                             os.getenv("ISE_PXGRID_CERT_PATH"),
+                                             os.getenv("ISE_PXGRID_KEY_PATH"))
 
     # Check to see if the account is enabled
     if pxgrid.account_activate()['accountState'] != 'ENABLED':
@@ -528,8 +560,8 @@ def clear_ise_anc_assignment(mac_address):
 
     pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
                                              os.getenv("ISE_PXGRID_CLIENT_NAME"),
-                                             "/app/pxGrid_cert.pem",
-                                             "/app/pxGrid_key.pem")
+                                             os.getenv("ISE_PXGRID_CERT_PATH"),
+                                             os.getenv("ISE_PXGRID_KEY_PATH"))
 
     # Check to see if the account is enabled
     if pxgrid.account_activate()['accountState'] != 'ENABLED':
@@ -567,8 +599,8 @@ def get_ise_session_data(ip_address):
 
     pxgrid = pxgrid_controller.PxgridControl(os.getenv("ISE_API_ADDRESS"),
                                              os.getenv("ISE_PXGRID_CLIENT_NAME"),
-                                             "/app/pxGrid_cert.pem",
-                                             "/app/pxGrid_key.pem")
+                                             os.getenv("ISE_PXGRID_CERT_PATH"),
+                                             os.getenv("ISE_PXGRID_KEY_PATH"))
 
     # Check to see if the account is enabled
     if pxgrid.account_activate()['accountState'] != 'ENABLED':
