@@ -202,8 +202,11 @@ def get_amp_computer(ip_address):
     # Get the computers that have been at the internal IP
     response = client.get_computers(internal_ip=ip_address)
 
-    # Return a JSON formatted list of the computers
-    return jsonify(response)
+    if response:
+        # Return a JSON formatted response
+        return jsonify(response)
+    else:
+        return json_no_content()
 
 
 @app.route('/api/amp/computer/<connector_guid>/group', methods=['POST'])
@@ -221,8 +224,11 @@ def set_amp_computer_group(connector_guid):
     # Patch the computer to change the group
     response = client.patch_computer(connector_guid=connector_guid, data=request.get_json())
 
-    # Return a JSON formatted response
-    return jsonify(response)
+    if response:
+        # Return a JSON formatted response
+        return jsonify(response)
+    else:
+        return json_no_content()
 
 
 @app.route('/api/amp/groups', methods=['GET'])
@@ -240,8 +246,11 @@ def get_amp_groups():
     # Get the groups that exist in AMP
     response = client.get_groups()
 
-    # Return a JSON formatted list of the Groups
-    return jsonify(response)
+    if response:
+        # Return a JSON formatted response
+        return jsonify(response)
+    else:
+        return json_no_content()
 
 
 @app.route('/api/amp/computer/<connector_guid>/isolation', methods=['GET'])

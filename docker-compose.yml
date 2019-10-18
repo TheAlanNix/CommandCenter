@@ -44,6 +44,9 @@ services:
     container_name: ccc_web
     depends_on:
       - mongodb
+    environment:
+        - ISE_PXGRID_CERT_PATH=/app/pxGrid_cert.pem
+        - ISE_PXGRID_KEY_PATH=/app/pxGrid_key.pem
     env_file: .env
     ports:
       - "5000:5000"
