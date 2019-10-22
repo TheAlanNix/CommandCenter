@@ -11,7 +11,9 @@ Cisco Command Center is a project to collect and correlate event data across mul
 
 ## Installation
 
-Cisco Command Center uses a Python Flask web server, a MongoDB database, and a Vue javascript framework front-end, and several "worker" processes to import events.
+Cisco Command Center uses a Python Flask web server, a MongoDB database, a Vue javascript framework front-end, and several "worker" Docker containers to import events.  The current architecture for the project is shown below.
+
+![Architecture](Screenshots/architecture.png)
 
 To set up Command Center, first, make a copy of *.example.env* file as *.env*.  From the project root directory, run the following:
 
