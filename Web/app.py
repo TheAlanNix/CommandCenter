@@ -13,6 +13,7 @@ import pprint
 import time
 import uuid
 from bson.json_util import dumps
+from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 
 import flask
@@ -57,6 +58,45 @@ def ping_pong():
 
 
 # Events Functions
+@app.route('/api/event/<event_id>', methods=['GET'])
+def get_event(event_id):
+    """A function to retrieve an event from the database and return it as JSON"""
+
+    # Connect to the MongoDB instance
+    db_client = pymongo.MongoClient("mongodb://{}/".format(os.getenv("MONGO_INITDB_ADDRESS")),
+                                    username=os.getenv("MONGO_INITDB_ROOT_USERNAME"),
+                                    password=os.getenv("MONGO_INITDB_ROOT_PASSWORD"))
+
+    # Use the 'commandcenter' database
+    command_center_db = db_client['commandcenter']
+
+    # Use the 'events' collection from the 'commandcenter' database
+    command_center_events = command_center_db['events']
+
+    # Set up a basic query filter
+    query_filter = {}
+
+    # Filter for the specified event ID
+    query_filter['_id'] = ObjectId(event_id)
+
+    # Get the event
+    event = command_center_events.find_one(query_filter)
+
+    # Make a human readable timestamp
+    event['formatted_timestamp'] = event["timestamp"].strftime("%b %d, %Y %H:%M:%S UTC")
+
+    # Parse the bson event into json
+    event = json.loads(dumps(event))
+
+    # Set up a response object
+    response_object = {
+        'status': 'success',
+        'event': [event],
+    }
+
+    return jsonify(response_object)
+
+
 @app.route('/api/events', methods=['GET'])
 def get_events():
     """A function to retrieve events from the database and return them as JSON"""
@@ -93,8 +133,17 @@ def get_events():
     if 'event_name' in request.args:
         query_filter['event_name'] = {'$eq': request.args['event_name']}
 
+    # Projection to return a subset of fields
+    projection = {
+        'event_name': 1,
+        'event_details': 1,
+        'product': 1,
+        'src_ip': 1,
+        'timestamp': 1
+    }
+
     # Get the events
-    latest_events = command_center_events.find(query_filter).sort('timestamp', -1)
+    latest_events = command_center_events.find(query_filter, projection).sort('timestamp', -1)
 
     # Set up a response object
     response_object = {

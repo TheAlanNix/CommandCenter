@@ -196,11 +196,11 @@ export default {
       let minutes = date.getUTCMinutes();
 
       if (hour < 10) {
-        hour = `0 ${hour}`;
+        hour = `0${hour}`;
       }
 
       if (minutes < 10) {
-        minutes = `0 ${minutes}`;
+        minutes = `0${minutes}`;
       }
 
       return `${mm}/${dd}/${yyyy} ${hour}:${minutes} UTC`;
@@ -238,7 +238,18 @@ export default {
     },
     onEventUpdate(event) {
       if (event) {
-        this.selectedEvent = event;
+        const path = `http://${window.location.hostname}:5000/api/event/${event._id.$oid}`;
+        console.log(path);
+        axios
+          .get(path)
+          .then((res) => {
+            console.log(res.data);
+            this.selectedEvent = res.data.event[0];
+          })
+          .catch((error) => {
+            console.error(error);
+            this.$store.dispatch('addError', { message: error });
+          });
       }
     },
     onEventNameSelected(value) {
