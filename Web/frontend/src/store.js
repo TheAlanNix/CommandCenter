@@ -10,7 +10,7 @@ export default new Vuex.Store({
     events: [],
     loading: false,
     notification: null,
-    timeframe: 6,
+    timeframe: 24,
   },
   mutations: {
     ADD_ERROR(state, error) {

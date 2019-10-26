@@ -124,7 +124,20 @@ export default {
       this.filteredEvents = returnEvents;
     },
     onEventUpdate(event) {
-      this.selectedEvent = event;
+      if (event) {
+        const path = `http://${window.location.hostname}:5000/api/event/${event._id.$oid}`;
+        console.log(path);
+        axios
+          .get(path)
+          .then((res) => {
+            console.log(res.data);
+            this.selectedEvent = res.data.event[0];
+          })
+          .catch((error) => {
+            console.error(error);
+            this.$store.dispatch('addError', { message: error });
+          });
+      }
     },
   },
   beforeDestroy() {
