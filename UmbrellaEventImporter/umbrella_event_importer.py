@@ -93,7 +93,8 @@ def run():
                 "event_details": f"Umbrella {event['actionTaken']} the following destination: {event['destination']}",
                 "product": "Umbrella",
                 "src_ip": src_ip,
-                "timestamp": current_event_time
+                "timestamp": current_event_time,
+                "formatted_timestamp": current_event_time.strftime("%b %d, %Y %H:%M:%S UTC")
             }
 
             # Add the common fields to the event

@@ -1,14 +1,41 @@
 version: '3'
 services:
-  web_frontend_dev:
-    container_name: ccc_web_frontend_dev
-    command: bash -c "npm install && npm run serve"
+  mongodb:
+    container_name: ccc_mongodb
+    env_file: .env
+    image: "mongo"
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+  amp_events:
+    build: "./AmpEventImporter"
+    container_name: ccc_amp_event_importer
+    depends_on: 
+      - mongodb
+    env_file: .env
+    restart: on-failure
+  firepower_syslog:
+    build: "./FirepowerSyslogImporter"
+    container_name: ccc_firepower_syslog
     depends_on:
       - mongodb
     env_file: .env
-    image: node
     ports:
-      - "8080:8080"
-    volumes:
-      - ./Web/frontend:/app
-    working_dir: /app
+      - "4514:4514/udp"
+    restart: on-failure
+  stealthwatch_events:
+    build: "./StealthwatchEventImporter"
+    container_name: ccc_stealthwatch_event_importer
+    depends_on: 
+      - mongodb
+    env_file: .env
+    restart: on-failure
+  umbrella_events:
+    build: "./UmbrellaEventImporter"
+    container_name: ccc_umbrella_event_importer
+    depends_on: 
+      - mongodb
+    env_file: .env
+    restart: on-failure

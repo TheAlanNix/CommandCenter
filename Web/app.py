@@ -158,8 +158,9 @@ def get_events():
     # Iterate through all events
     for event in latest_events:
 
-        # Make a human readable date
-        event['formatted_timestamp'] = event["timestamp"].strftime("%b %d, %Y %H:%M:%S UTC")
+        # Make a human readable date if one doesn't exist - starting to do this on event import now
+        if 'formatted_timestamp' not in event.keys():
+            event['formatted_timestamp'] = event["timestamp"].strftime("%b %d, %Y %H:%M:%S UTC")
 
         # Append the event to the response
         response_object['events'].append(json.loads(dumps(event)))

@@ -49,6 +49,9 @@ class FirepowerSyslogHandler():
         # If we properly parsed the event, do stuff
         if parsed_event:
 
+            # Parse the current event time
+            current_event_time = datetime.strptime(parsed_event.group(7), "%a %b %d %H:%M:%S %Y %Z")
+
             # Store the parsed data into a dict
             event_json = {
                 "product": "Firepower",
@@ -59,7 +62,8 @@ class FirepowerSyslogHandler():
                 "event_details": f"{parsed_event.group(8)} event {parsed_event.group(4)} was detected by '{parsed_event.group(6)}'.",
                 "impact_level": parsed_event.group(5),
                 "sensor_name": parsed_event.group(6),
-                "timestamp": datetime.strptime(parsed_event.group(7), "%a %b %d %H:%M:%S %Y %Z"),
+                "timestamp": current_event_time,
+                "formatted_timestamp": current_event_time.strftime("%b %d, %Y %H:%M:%S UTC"),
                 "classification": parsed_event.group(8),
                 "priority": parsed_event.group(9),
                 "protocol": parsed_event.group(10),

@@ -235,7 +235,8 @@ def run():
             event_common_fields = {
                 "product": "Stealthwatch",
                 "src_ip": event["source"]["ipAddress"],
-                "timestamp": current_event_time
+                "timestamp": current_event_time,
+                "formatted_timestamp": current_event_time.strftime("%b %d, %Y %H:%M:%S UTC")
             }
 
             # Add the common fields to the event

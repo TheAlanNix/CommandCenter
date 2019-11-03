@@ -101,7 +101,8 @@ def run():
                 "event_details": event["detection"],
                 "product": "AMP for Endpoints",
                 "src_ip": src_ip,
-                "timestamp": current_event_time
+                "timestamp": current_event_time,
+                "formatted_timestamp": current_event_time.strftime("%b %d, %Y %H:%M:%S UTC")
             }
 
             # Add the common fields to the event
