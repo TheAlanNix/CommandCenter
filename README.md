@@ -15,9 +15,9 @@ Cisco Command Center uses a Python Flask web server, a MongoDB database, a Vue j
 
 ![Architecture](Screenshots/architecture.png)
 
-To set up Command Center, first, make a copy of *.example.env* file as *.env*.  From the project root directory, run the following:
+To set up Command Center, first, make a copy of *.env.example* file as *.env*.  From the project root directory, run the following:
 
->```cp .example.env .env```
+>```cp .env.example .env```
 
 You'll then need to enter the MongoDB database credentials you'd prefer to use, and product API credentials, into the *.env* file.  API credentials are not required for each product, but each will product will provide it's own set of event data and response capabilities.
 
