@@ -214,8 +214,9 @@ def run():
     for event in stealthwatch_events["data"]["results"]:
 
         # Filters for some really chatty event types
+        #   262: Reset/TCP
         #   310: Flow_Denied
-        if event["securityEventType"] in [310]:
+        if event["securityEventType"] in [262, 310]:
             continue
 
         # Check to see if there's an existing active event
