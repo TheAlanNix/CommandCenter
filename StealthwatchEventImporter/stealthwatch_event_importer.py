@@ -84,15 +84,19 @@ def get_event_names():
         exit(1)
 
 
-def get_events(start_date=None):
+def get_events(start_date=None, end_date=None):
     """Get Stealthwatch Events"""
 
     # Set the URL for the query to POST the filter and initiate the search
     url = f"https://{os.getenv('STEALTHWATCH_API_ADDRESS')}/sw-reporting/v1/tenants/{os.getenv('STEALTHWATCH_API_TENANT')}" \
            "/security-events/queries"
 
-    # Set the current time as the end
-    end_datetime = datetime.utcnow()
+    # If an end date is specified, use it, otherwise set it to now
+    if end_date is None:
+        # Set the current time as the end
+        end_datetime = datetime.utcnow()
+    else:
+        end_datetime = end_date
 
     # If a start date is specified, use it, otherwise get the previous day
     if start_date is None:
@@ -149,16 +153,23 @@ def get_events(start_date=None):
         exit(1)
 
 
-def clear_events(event_table):
-    """Clear Stealthwatch events with an ID of '0'"""
+def get_existing_event(event_table, event):
+    """A function to search the database for an existing active event"""
 
-    # Setup a query for Stealthwatch events with ID '0'
-    sw_zero_query = {"product": "Stealthwatch", "id": 0}
+    # Set up a query to look for an identical active event
+    active_event_query = {
+        "id": 0,
+        "product": "Stealthwatch",
+        "firstActiveTime": event["firstActiveTime"],
+        "securityEventType": event["securityEventType"],
+        "source": event["source"],
+        "target": event["target"]
+    }
 
-    # Delete the events with ID '0'
-    results = event_table.delete_many(sw_zero_query)
+    # Get the event
+    event = event_table.find_one(active_event_query)
 
-    print(results.deleted_count, " documents deleted.")
+    return event
 
 
 def run():
@@ -176,7 +187,7 @@ def run():
     command_center_events = command_center_db["events"]
 
     # Get the latest 'Stealthwatch' event
-    latest_event = command_center_events.find({"product": "Stealthwatch", "id": {"$ne": 0}}).sort("timestamp", -1)
+    latest_event = command_center_events.find({"product": "Stealthwatch"}).sort("timestamp", -1)
 
     # If there's no latest event, the Event collection is empty, so we create a timestamp to import from.
     if latest_event.count():
@@ -197,9 +208,6 @@ def run():
     # Get the latest Stealthwatch events
     stealthwatch_events = get_events(latest_event["timestamp"])
 
-    # Delete SW Events with ID '0'
-    clear_events(command_center_events)
-
     print("Total Events Returned: ", len(stealthwatch_events["data"]["results"]))
 
     # Iterate through all fetched events
@@ -210,19 +218,8 @@ def run():
         if event["securityEventType"] in [310]:
             continue
 
-        # A placholder to see if we've already imported this event
-        event_exists = False
-
-        # If the event ID isn't zero, then check to see if we've already imported it
-        if event["id"]:
-
-            # Query to see if the event ID exists
-            existing_event = command_center_events.find_one({"product": "Stealthwatch", "id": event["id"]})
-
-            # Print a logging message
-            if existing_event:
-                event_exists = True
-                print(f"Found that the event already exists: {event['id']}")
+        # Check to see if there's an existing active event
+        existing_event = get_existing_event(command_center_events, event)
 
         current_event_time = datetime.strptime(event["lastActiveTime"], "%Y-%m-%dT%H:%M:%S.%f+0000")
         latest_event_time = latest_event["timestamp"]
@@ -242,12 +239,12 @@ def run():
             # Add the common fields to the event
             event.update(event_common_fields)
 
-            if event_exists:
+            if existing_event:
 
                 # Update the event in the database
                 x = command_center_events.replace_one({"_id": existing_event["_id"]}, event)
 
-                print(f"Updated Stealthwatch Event ID {event['id']} at MongoDB ID {x.inserted_id}")
+                print(f"Updated Stealthwatch Event ID {event['id']} at MongoDB ID {existing_event['_id']}")
 
             else:
 
