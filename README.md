@@ -54,7 +54,7 @@ If malicious activity is discovered, Command Center allows the user to leverage 
 ## To-Do
 
 * Import Duo events
-* Import Stealthwatch Cloud events
+* Import SWC events
 * Import Firepower Device events (rather than strictly from FMC)
 * Display Stealthwatch Host Snapshot data
 * Federate event loads across multiple MongoDB files to improve performance
