@@ -1,0 +1,13 @@
+FROM node
+
+RUN npm install -g @vue/cli
+
+WORKDIR /app
+
+COPY ./command-center/package*.json ./
+
+RUN npm install
+
+COPY ./command-center ./
+
+CMD ["npm", "run", "serve"]

@@ -1,0 +1,90 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+This is a pxGrid API client for Cisco Identity Services Engine (ISE)
+
+pxgrid_client.py
+----------------
+Author: Alan Nix
+Property of: Cisco Systems
+"""
+
+import base64
+import json
+import ssl
+import time
+import urllib.request
+
+
+class PxgridClient:
+    """This is a pxGrid API client for Cisco ISE."""
+
+    __address = None
+    __client_cert = None
+    __client_key = None
+    __client_name = None
+
+    __debug = False
+
+    def __init__(self, address, client_name, client_cert, client_key, debug=False):
+        """Initialize the pxGrid Client object."""
+
+        self.__address = address
+        self.__client_name = client_name
+        self.__client_cert = client_cert
+        self.__client_key = client_key
+
+    def send_rest_request(self, api_url, payload):
+
+        # Make the payload into JSON
+        json_string = json.dumps(payload)
+
+        print("API URL: " + api_url)
+        print("Payload: " + json_string)
+
+        # Build the SSL Context
+        handler = urllib.request.HTTPSHandler(context=self.get_ssl_context())
+        opener = urllib.request.build_opener(handler)
+
+        rest_request = urllib.request.Request(url=api_url, data=str.encode(json_string))
+        rest_request.add_header('Content-Type', 'application/json')
+        rest_request.add_header('Accept', 'application/json')
+
+        b64 = base64.b64encode((self.__client_name + ':').encode()).decode()
+        rest_request.add_header('Authorization', 'Basic ' + b64)
+        rest_response = opener.open(rest_request)
+        response = rest_response.read().decode()
+
+        if response is not '':
+            print("Response:" + json.dumps(json.loads(response), indent=4))
+            return json.loads(response)
+        else:
+            return None
+
+    def account_activate(self):
+        payload = {}
+        # Build the API URL
+        api_url = 'https://{}:8910/pxgrid/{}'.format(self.__address, 'control/AccountActivate')
+        return self.send_rest_request(api_url, payload)
+
+    def service_lookup(self, service_name):
+        payload = {'name': service_name}
+        api_url = 'https://{}:8910/pxgrid/{}'.format(self.__address, 'control/ServiceLookup')
+        return self.send_rest_request(api_url, payload)
+
+    def get_access_secret(self, peer_node_name):
+        payload = {'peerNodeName': peer_node_name}
+        api_url = 'https://{}:8910/pxgrid/{}'.format(self.__address, 'control/AccessSecret')
+        return self.send_rest_request(api_url, payload)
+
+    def get_ssl_context(self):
+
+        # Create an SSL context for client auth
+        context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+
+        # Load the client certificate
+        if self.__client_cert is not None:
+            context.load_cert_chain(certfile=self.__client_cert,
+                                    keyfile=self.__client_key)
+
+        return context

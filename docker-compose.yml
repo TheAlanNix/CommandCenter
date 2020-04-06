@@ -1,56 +1,67 @@
 version: '3'
 services:
   mongodb:
-    container_name: ccc_mongodb
+    container_name: command-center_mongodb
     env_file: .env
     image: "mongo"
-    ports:
-      - "27017:27017"
     restart: always
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
   amp_events:
     build: "./AmpEventImporter"
-    container_name: ccc_amp_event_importer
+    container_name: command-center_amp-event-importer
     depends_on: 
       - mongodb
     env_file: .env
     restart: on-failure
+  api_relay:
+    build: "./ApiRelay"
+    container_name: command-center_api-relay
+    depends_on: 
+      - mongodb
+    environment:
+      - ISE_PXGRID_CERT_PATH=/app/pxGrid_cert.pem
+      - ISE_PXGRID_KEY_PATH=/app/pxGrid_key.pem
+    env_file: .env
+    restart: on-failure
+    volumes:
+      - ${ISE_PXGRID_CERT_PATH}:/app/pxGrid_cert.pem
+      - ${ISE_PXGRID_KEY_PATH}:/app/pxGrid_key.pem
   firepower_syslog:
     build: "./FirepowerSyslogImporter"
-    container_name: ccc_firepower_syslog
+    container_name: command-center_firepower-syslog
     depends_on:
       - mongodb
     env_file: .env
     ports:
       - "4514:4514/udp"
     restart: on-failure
+  frontend:
+    build: "./Frontend"
+    container_name: command-center_frontend
+    depends_on: 
+      - mongodb
+    env_file: .env
+  proxy:
+    build: "./Proxy"
+    container_name: command-center_proxy
+    depends_on:
+      - mongodb
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: on-failure
   stealthwatch_events:
     build: "./StealthwatchEventImporter"
-    container_name: ccc_stealthwatch_event_importer
+    container_name: command-center_stealthwatch-event-importer
     depends_on: 
       - mongodb
     env_file: .env
     restart: on-failure
   umbrella_events:
     build: "./UmbrellaEventImporter"
-    container_name: ccc_umbrella_event_importer
+    container_name: command-center_umbrella-event-importer
     depends_on: 
       - mongodb
     env_file: .env
     restart: on-failure
-  web:
-    build: "./Web"
-    container_name: ccc_web
-    depends_on:
-      - mongodb
-    environment:
-        - ISE_PXGRID_CERT_PATH=/app/pxGrid_cert.pem
-        - ISE_PXGRID_KEY_PATH=/app/pxGrid_key.pem
-    env_file: .env
-    ports:
-      - "5000:5000"
-    restart: always
-    volumes:
-      - ${ISE_PXGRID_CERT_PATH}:/app/pxGrid_cert.pem
-      - ${ISE_PXGRID_KEY_PATH}:/app/pxGrid_key.pem

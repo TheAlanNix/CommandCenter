@@ -215,8 +215,9 @@ def run():
 
         # Filters for some really chatty event types
         #   262: Reset/TCP
+        #   292: ICMP_Port_Unreachable
         #   310: Flow_Denied
-        if event["securityEventType"] in [262, 310]:
+        if event["securityEventType"] in [262, 292, 310]:
             continue
 
         # Check to see if there's an existing active event

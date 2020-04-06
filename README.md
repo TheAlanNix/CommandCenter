@@ -11,7 +11,7 @@ Cisco Command Center is a project to collect and correlate event data across mul
 
 ## Installation
 
-Cisco Command Center uses a Python Flask web server, a MongoDB database, a Vue javascript framework front-end, and several "worker" Docker containers to import events.  The current architecture for the project is shown below.
+Cisco Command Center uses an [Nginx](https://nginx.org/) server for SSL termination and authentication, a [Vue](https://vuejs.org/) javascript framework front-end, a Python [FastAPI](https://fastapi.tiangolo.com/) backend, a [MongoDB](https://www.mongodb.com/) database for storage, and several "worker" Docker containers to import events.  The current architecture for the project is shown below.
 
 ![Architecture](Screenshots/architecture.png)
 
@@ -23,15 +23,25 @@ You'll then need to enter the MongoDB database credentials you'd prefer to use, 
 
 By default, Command Center will deploy a MongoDB container, and leverage that for storage.  If you'd like to use an external MongoDB instance, simply update the MongoDB address, database name, and credentials in the *.env* file.
 
-Once the *.env* file configuration is complete, you can simply run the following command from the root project directory to start all of the Docker containers:
+For the Nginx container, you'll either need to use a signed SSL certificate, or you can create a self-signed certificate by executing the `create-certificate.sh` script in the project's root.
+
+- If using a signed certificate, you can import it by adjusting the Proxy container's [Dockerfile](Proxy/Dockerfile).  This will import the appropriate certificate and private key upon building the container.
+- If using `create-certificate.sh`, a certificate and private key will be generated for you and placed in the Proxy folder.
+
+Once the *.env* file configuration is complete, and certificate prepared, you can simply run the following command from the root project directory to start all of the Docker containers:
 
 >```docker-compose up```
 
-This will download/compile all of the containers, and start them.  By default, this will run the containers in the foreground.  I recommend doing this at least once to make sure everything starts appropriately.  Once you've verified the *.env* is correct, you can run the following to daemon-ize the containers:
+This will download/compile all of the containers, and start them.  By default, this will run the containers in the foreground.  I recommend doing this at least once to make sure everything starts appropriately.  Once you've verified the data in your *.env* is correct, you can execute the following command to run the containers as daemons:
 
 >```docker-compose up -d```
 
-At this point your Command Center instance should be up and running on port 5000.
+At this point your Command Center instance should be up and running and should be accesible on TCP port 443.
+
+The default credentials for Command Center are the following:
+
+- Username: **admin**
+- Password: **cisco123**
 
 ## Features
 
