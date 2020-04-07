@@ -1,7 +1,5 @@
-FROM node
-
-RUN npm install -g http-server
-RUN npm install -g @vue/cli
+# Build
+FROM node as build
 
 WORKDIR /app
 
@@ -9,8 +7,11 @@ COPY ./command-center/package*.json ./
 
 RUN npm install
 
-COPY ./command-center ./
+COPY ./command-center .
 
 RUN npm run build
 
-CMD [ "http-server", "dist" ]
+# Prod
+FROM nginx as production
+
+COPY --from=build /app/dist /usr/share/nginx/html
