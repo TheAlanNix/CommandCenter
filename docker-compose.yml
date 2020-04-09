@@ -42,6 +42,7 @@ services:
     depends_on: 
       - mongodb
     env_file: .env
+    restart: on-failure
   proxy:
     build: "./Proxy"
     container_name: command-center_proxy

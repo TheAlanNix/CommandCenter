@@ -47,6 +47,7 @@ services:
     depends_on: 
       - mongodb
     env_file: .env
+    restart: on-failure
     volumes:
       - ./Frontend/command-center/src:/app/src:cached
   proxy:
