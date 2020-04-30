@@ -1,7 +1,7 @@
 version: '3'
 services:
   mongodb:
-    container_name: command-center_mongodb
+    container_name: cc-mongodb
     env_file: .env
     image: "mongo"
     restart: always
@@ -9,14 +9,14 @@ services:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
   amp_events:
     build: "./AmpEventImporter"
-    container_name: command-center_amp-event-importer
+    container_name: cc-amp-event-importer
     depends_on: 
       - mongodb
     env_file: .env
     restart: on-failure
   api_relay:
     build: "./ApiRelay"
-    container_name: command-center_api-relay
+    container_name: cc-api-relay
     depends_on: 
       - mongodb
     environment:
@@ -29,7 +29,7 @@ services:
       - ${ISE_PXGRID_KEY_PATH}:/app/pxGrid_key.pem
   firepower_syslog:
     build: "./FirepowerSyslogImporter"
-    container_name: command-center_firepower-syslog
+    container_name: cc-firepower-syslog
     depends_on:
       - mongodb
     env_file: .env
@@ -38,14 +38,14 @@ services:
     restart: on-failure
   frontend:
     build: "./Frontend"
-    container_name: command-center_frontend
+    container_name: cc-frontend
     depends_on: 
       - mongodb
     env_file: .env
     restart: on-failure
   proxy:
     build: "./Proxy"
-    container_name: command-center_proxy
+    container_name: cc-proxy
     depends_on:
       - mongodb
     ports:
@@ -54,14 +54,14 @@ services:
     restart: on-failure
   stealthwatch_events:
     build: "./StealthwatchEventImporter"
-    container_name: command-center_stealthwatch-event-importer
+    container_name: cc-stealthwatch-event-importer
     depends_on: 
       - mongodb
     env_file: .env
     restart: on-failure
   umbrella_events:
     build: "./UmbrellaEventImporter"
-    container_name: command-center_umbrella-event-importer
+    container_name: cc-umbrella-event-importer
     depends_on: 
       - mongodb
     env_file: .env

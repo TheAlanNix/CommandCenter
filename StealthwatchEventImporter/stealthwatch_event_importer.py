@@ -21,7 +21,7 @@ load_dotenv()
 
 try:
     urllib3.disable_warnings()
-except:
+except Exception as e:
     pass
 
 # Initialize a requests session
@@ -57,7 +57,7 @@ def get_event_names():
 
     # Set the URL for getting the Security Events Templates
     url = f"https://{os.getenv('STEALTHWATCH_API_ADDRESS')}/sw-reporting/v1/tenants/{os.getenv('STEALTHWATCH_API_TENANT')}" \
-           "/security-events/templates"
+          "/security-events/templates"
 
     # Build the request headers
     request_headers = {"Content-type": "application/json", "Accept": "application/json"}
@@ -89,7 +89,7 @@ def get_events(start_date=None, end_date=None):
 
     # Set the URL for the query to POST the filter and initiate the search
     url = f"https://{os.getenv('STEALTHWATCH_API_ADDRESS')}/sw-reporting/v1/tenants/{os.getenv('STEALTHWATCH_API_TENANT')}" \
-           "/security-events/queries"
+          "/security-events/queries"
 
     # If an end date is specified, use it, otherwise set it to now
     if end_date is None:
@@ -258,6 +258,7 @@ def run():
 ###################
 # !!! DO WORK !!! #
 ###################
+
 
 if __name__ == "__main__":
 
